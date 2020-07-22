@@ -2,6 +2,11 @@
 
 ## R-Package für die Plausibilisierung von Abstimmungsresultaten
 
+Das plausi package enthält Funktionen die in der PlausiApp verwendet werden:
+
+- Ausreissererkennung
+- Vorhersage von zu erwartenden Resultaten (Ja-Anteile, Stimmbeteiligung etc.)
+
 Installation via gittea:
 
-remotes::install_url("http://10.73.108.135:8788/STAT/tax/archive/master.zip")
+remotes::install_url("http://10.73.108.135:8788/STAT/plausi/archive/master.zip").
