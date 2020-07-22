@@ -5,7 +5,7 @@
 Das plausi package enthält Funktionen die in der PlausiApp verwendet werden:
 
 - Ausreissererkennung
-- Berechnung von Differenzen zwischen allen möglichen Kombinationen (Stimmbeteiligung z.B.)
+- Berechnung von Differenzen zwischen allen möglichen Kombinationen (Stimmbeteiligung verschiedener Vorlagen z.B.)
 - Vorhersage von zu erwartenden Resultaten (Ja-Anteile, Stimmbeteiligung etc.)
 
 Installation via gittea:
