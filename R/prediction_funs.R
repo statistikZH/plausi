@@ -23,9 +23,8 @@
 #' @examples
 #'
 #' predict_single_vote("Eidg1",votedata, to_exclude_vars = "Kant1")
-#'
 
-predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trainControl=NULL,to_exclude_vars=NULL,...){
+predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trainControl=NULL,to_exclude_vars=NULL,...){
 
   if(is.null(testdata)) testdata <- traindata
 
@@ -48,24 +47,23 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trai
   # print(colnames(traindata))
 
   # Trainiere Model
-  cv_model_mars <- caret::train(
+  cv_model <- caret::train(
     form,
     data = traindata %>% dplyr::select(-v_gemwkid,-gemeinde), # TODO: Erlaube Gemeinde IDs ( Bezeichnungen via parameter zu ersetzen - areaid / name)
     method = method,
-    trControl = cv10,...
+    trControl = cv10,
+    ...
   )
 
   # cv_model_mars$bestTune
 
-
-  testdata$pred <- stats::predict(cv_model_mars,testdata)
+  testdata$pred <- predict(cv_model,testdata)
 
   # TO DO :
   # Gebietslabel / ID nicht hart vorgeben, sondern via parameter der Funktion übernehmen
   testdata %>% dplyr::select(gemeinde,v_gemwkid, pred, real=x) %>%
     dplyr::mutate(vorlage=x)
 }
-
 
 
 
