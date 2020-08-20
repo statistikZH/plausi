@@ -70,6 +70,6 @@ get_differences <- function(df, vorl1,vorl2){
 
   crosscheckdata_new <- purrr::map2(vorl1,vorl2,~cross_fun(df,.x,.y))
 
-  dplyr::bind_cols(crosscheckdata_new) %>% dplyr::select(dplyr::ends_with("gemwkid"),dplyr::ends_with("gemeinde"),dplyr::contains("_"))
+  crosscheckdata_new %>% purrr::map(tidyr::gather, key = "combination", value = "difference", dplyr::contains("_")) %>% dplyr::bind_rows()
 }
 
