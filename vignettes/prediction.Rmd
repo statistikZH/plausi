@@ -19,8 +19,9 @@ library(plausi)
 library(tidyverse)
 library(swissdd)
 
+results <- swissdd::get_nationalvotes(from_date="2014-01-01")
 
-pred_res <- results %>% 
+pred_res <- results %>%
   filter(canton_id==1& mun_id!=9010) %>% 
   select(mun_id,id, jaStimmenInProzent)
 
@@ -44,5 +45,26 @@ hello2 <- predict_votes(c("Eidg1","Kant1"),train=votedata1,exclude_votes = TRUE)
 
 glimpse(votedata)
 
+```
+
+```{r}
+
+
+ausgez_gem <- cantdata_820 %>% 
+  filter(canton_name=="ZH"&id==104955&gebietAusgezaehlt==TRUE) %>%
+  pull(mun_id)
+
+train <- votedata %>% mutate(Eidg1=ifelse(v_gemwkid %in% ausgez_gem,NA, Eidg1))
+
+votedata1 <- votedata %>% mutate_at(vars(Eidg1,Kant1),~ifelse(v_gemwkid %in% ausgez_gem,NA, .x))
+
+hello2 <- predict_votes(c("Eidg1","Kant1"),train=train,exclude_votes = TRUE) 
+  
+hello2 <- hello2 %>%  mutate(diff=pred-real)
+
+
+
+
 
 ```
+
