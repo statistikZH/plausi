@@ -1,0 +1,31 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r setup}
+library(plausi)
+library(swissdd)
+library(tidyverse)
+```
+
+```{r}
+
+Sys.getenv("https_proxy")
+Sys.setenv(https_proxy="")
+
+resultate <- swissdd::get_nationalvotes()
+
+vorlagen <- unique(resultate$id)
+
+resultate %>% 
+  select(id, mun_id,mun_name, stimmbeteiligungInProzent) %>% 
+  pivot_wider(names_from = id, values_from=stimmbeteiligungInProzent)
+
+```
+
+
+```{r}
+?plausi::get_differences
+```
+

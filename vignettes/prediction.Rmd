@@ -46,3 +46,66 @@ glimpse(votedata)
 
 
 ```
+
+
+# Solve Overfitting
+https://blog.zenggyu.com/en/post/2018-06-16/multivariate-adaptive-regression-splines-in-a-nutshell/
+
+```{r}
+sundata_369 <- readRDS("C:/gitrepos/abstimmungen_PlausiTool/app/testdata/sundata_369.RDS")
+
+features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
+
+# wide to long
+pred_act <- sundata_369 %>% 
+  select(gemeinde,gemwkid, artsort, jastimmeninprozent) %>% 
+  tidyr::spread(artsort,jastimmeninprozent)
+
+# Hier code einbauen der nur Vorlagen mit mehr als 5-10 einträgen aufweist
+
+pred_all <- pred_act %>% 
+  filter(gemwkid != 9010)%>% 
+  rename(v_gemwkid = gemwkid)%>% 
+  # allenfalls auf right-join umstellen
+  right_join(features, by = c("v_gemwkid")) %>% 
+  #hack um gemeindelabels für Gemeinden die noch nicht auf gelb sind beizubehalten
+  mutate(gemeinde=v_gemeinde) %>% 
+  select(-v_gemeinde)
+
+ControlParamteres <- caret::trainControl(method = "cv",
+                                  number = 5,
+                                  savePredictions = TRUE,
+                                  classProbs = TRUE)
+
+
+parameterGrid <- expand.grid(mtry=c(2,3,4))
+
+
+
+
+pred_all <- pred_all %>% mutate(Eidg3=ifelse(gemeinde=="Rüti", 66, Eidg3))
+
+
+# Methode von gvcEarth auf pls angepasst
+preddata <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
+                          train = pred_all, 
+                          # method = "gcvEarth",
+                           method = "earth",
+                           metric = "RMSE",
+                          minspan = 5,
+                          # trainControl = ControlParamteres,
+                          # tuneGrid=expand.grid(degree=1:3,seq(2, 100, length.out = 10)),
+                          exclude_votes = TRUE) %>% 
+                  mutate(differenz = abs(real - pred)) %>% 
+                  mutate_if(is.numeric,~round(.,1)) %>% 
+                  rename(Gemeinde=gemeinde)
+
+preddata %>% filter(Gemeinde=="Rüti")
+
+
+
+
+
+
+```
+
