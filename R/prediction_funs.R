@@ -23,8 +23,9 @@
 #' @examples
 #'
 #' predict_single_vote("Eidg1",votedata, to_exclude_vars = "Kant1")
+#'
 
-predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trainControl=NULL,to_exclude_vars=NULL,...){
+predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trainControl=NULL,to_exclude_vars=NULL,geovars=c("gemeinde","v_gemwkid"),...){
 
   if(is.null(testdata)) testdata <- traindata
 
@@ -47,24 +48,24 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trai
   # print(colnames(traindata))
 
   # Trainiere Model
-  cv_model <- caret::train(
+  cv_model_mars <- caret::train(
     form,
-    data = traindata %>% dplyr::select(-v_gemwkid,-gemeinde), # TODO: Erlaube Gemeinde IDs ( Bezeichnungen via parameter zu ersetzen - areaid / name)
+
+    data = traindata %>% dplyr::select(!tidyselect::all_of(geovars)),
     method = method,
-    trControl = cv10,
-    ...
+    trControl = cv10,...
   )
 
   # cv_model_mars$bestTune
 
-  testdata$pred <- predict(cv_model,testdata)
+
+  testdata$pred <- stats::predict(cv_model_mars,testdata)
 
   # TO DO :
   # Gebietslabel / ID nicht hart vorgeben, sondern via parameter der Funktion übernehmen
-  testdata %>% dplyr::select(gemeinde,v_gemwkid, pred, real=x) %>%
-    dplyr::mutate(vorlage=x)
+  testdata %>% select(tidyselect::all_of(geovars), pred, real=x) %>%
+    mutate(vorlage=x)
 }
-
 
 
 #' Run predictions for multiple columns (specifically votes) in a dataset
@@ -84,13 +85,13 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trai
 #'
 #' predict_votes(c("Eidg1","Kant1"), votedata, exclude_votes=TRUE)
 
-predict_votes <- function(votes,train,test=NULL,method="bagEarth",trainControl=NULL,exclude_votes=FALSE,...){
+predict_votes <- function(votes,train,test=NULL,method="bagEarth",trainControl=NULL,exclude_votes=FALSE,geovars=c("mun_id","mun_name"),...){
 
   # Schliesse die zuvorhersagenden Abstimmungen gegenseitig aus den modellen aus, wenn exclude_votes = TRUE gesetzt wird (bei mehreren Abstimmungen am selben Datum aufgrund unterschiedlichen Auszählstände sinnvoll)
   if(exclude_votes==TRUE) { to_exclude_vars <- votes} else { to_exclude_vars <- NULL }
 
   # Iteriere über die vorherzusagenden Vorlagen
-  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,to_exclude_vars=to_exclude_vars))
+  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,to_exclude_vars=to_exclude_vars,geovars=geovars))
 
 }
 
@@ -120,5 +121,3 @@ predict_votes <- function(votes,train,test=NULL,method="bagEarth",trainControl=N
 RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
-
-
