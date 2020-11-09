@@ -49,6 +49,9 @@ predicted_results %>%
   summarize(rmse=RMSE(pred,real))
 
 
+
+
+
 ```
 
 # with real data 
@@ -57,7 +60,8 @@ predicted_results %>%
 https://blog.zenggyu.com/en/post/2018-06-16/multivariate-adaptive-regression-splines-in-a-nutshell/
 
 ```{r}
-sundata_369 <- readRDS("C:/gitrepos/abstimmungen_PlausiTool/app/testdata/sundata_369.RDS")
+
+sundata_369 <- readRDS("C:/gitrepos/plausi/data/20200927/sundata_369.RDS")
 
 features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
 
@@ -100,8 +104,8 @@ pred_all <- pred_all %>% mutate(Eidg3=ifelse(gemeinde=="Rüti", 66, Eidg3))
 preddata <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
                           train = pred_all, 
                           method = "gcvEarth",
-                          # trainControl = ControlParamteres,
-                          tuneGrid=hyper_grid,
+                          trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5),
+                          # tuneGrid=hyper_grid,
                           exclude_votes = TRUE) %>% 
                   mutate(differenz = abs(real - pred)) %>% 
                   mutate_if(is.numeric,~round(.,1)) %>% 
@@ -149,10 +153,8 @@ preddata3 %>%
        summarize(rmse=RMSE(pred,real,na.rm=TRUE))
                   
 
-preddata2 %>% 
+preddata %>% 
   filter(Gemeinde=="Rüti")
-
-
 
 
 ```
@@ -187,4 +189,15 @@ compare %>% group_by(vorlage,mod) %>% summarize(rmse=RMSE(pred,real,na.rm=TRUE))
 ```
 
 
+
+```{r}
+
+
+
+
+
+
+
+
+```
 
