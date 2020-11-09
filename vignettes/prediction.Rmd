@@ -18,35 +18,40 @@ knitr::opts_chunk$set(
 library(plausi)
 library(tidyverse)
 library(swissdd)
+library(earth)
+
+# BFS Nummern ausgewählter Gemeinden
+bfs_nrs <- c(6,7,10,11,12,87,219,294 ,181,38,60,92,119,182,218)
 
 
-pred_res <- results %>% 
-  filter(canton_id==1& mun_id!=9010) %>% 
-  select(mun_id,id, jaStimmenInProzent)
+# Sys.setenv(https_proxy="")
+# Beziehe historische Daten
+results <- swissdd::get_nationalvotes(from_date="2017-03-01", to_date="2020-09-27")
 
-predzh <-pred_res %>% tidyr::spread(id,jaStimmenInProzent)
+# Formattiere historische Daten um
+data <- results %>%
+  filter(canton_id==1) %>% 
+  mutate(id=paste0("v",id)) %>%
+  select(jaStimmenInProzent, id, mun_id, mun_name) %>%
+  pivot_wider(names_from=id, values_from = jaStimmenInProzent) %>% 
+ drop_na()
 
-colnames(predzh) <- paste("v", colnames(predzh), sep = "_")
+# Trainingsdatensatz (nur ausgezählte Gemeinden)
+train <- data %>% 
+  mutate_at(vars(v6310,v6330),~ifelse(mun_id %in% bfs_nrs,NA, .))
 
-ausgez_gem <- cantdata_820 %>% 
-  filter(canton_name=="ZH"&id==104955&gebietAusgezaehlt==TRUE) %>%
-  pull(mun_id)
+predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=data ,exclude_votes = TRUE, geo_vars=c("mun_id","mun_name" ))
 
-train <- predzh %>% mutate(v_5850=ifelse(v_mun_id %in% ausgez_gem,NA, v_5850)) %>% 
-  rename(v_gemwkid=v_mun_id) %>% 
-  mutate(gemeinde="")
 
-hello <- predict_votes("v_5850",train)
-
-votedata1 <- votedata %>% mutate_at(vars(Eidg1,Kant1),~ifelse(v_gemwkid %in% ausgez_gem,NA, .x))
-
-hello2 <- predict_votes(c("Eidg1","Kant1"),train=votedata1,exclude_votes = TRUE)
-
-glimpse(votedata)
+# Vorhersagefehler
+predicted_results %>% 
+  group_by(vorlage) %>% 
+  summarize(rmse=RMSE(pred,real))
 
 
 ```
 
+# with real data 
 
 # Solve Overfitting
 https://blog.zenggyu.com/en/post/2018-06-16/multivariate-adaptive-regression-splines-in-a-nutshell/
@@ -55,6 +60,8 @@ https://blog.zenggyu.com/en/post/2018-06-16/multivariate-adaptive-regression-spl
 sundata_369 <- readRDS("C:/gitrepos/abstimmungen_PlausiTool/app/testdata/sundata_369.RDS")
 
 features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
+
+unique(sundata_369$gemwkid)
 
 # wide to long
 pred_act <- sundata_369 %>% 
@@ -72,40 +79,112 @@ pred_all <- pred_act %>%
   mutate(gemeinde=v_gemeinde) %>% 
   select(-v_gemeinde)
 
-ControlParamteres <- caret::trainControl(method = "cv",
-                                  number = 5,
-                                  savePredictions = TRUE,
-                                  classProbs = TRUE)
-
-
-parameterGrid <- expand.grid(mtry=c(2,3,4))
-
-
-
+# ControlParamteres <- caret::trainControl(method = "cv",
+#                                   number = 5,
+#                                   savePredictions = TRUE,
+#                                   classProbs = TRUE)
+# 
+# 
+# parameterGrid <- expand.grid(mtry=c(2,3,4))
+# 
 
 pred_all <- pred_all %>% mutate(Eidg3=ifelse(gemeinde=="Rüti", 66, Eidg3))
 
+# hyper_grid <- expand.grid(
+#   degree = 1:3,
+#   nprune = seq(2, 100, length.out = 10) %>% floor()
+# )
 
-# Methode von gvcEarth auf pls angepasst
+
+# Methode von gcvEarth auf pls angepasst
 preddata <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
                           train = pred_all, 
-                          # method = "gcvEarth",
-                           method = "earth",
-                           metric = "RMSE",
-                          minspan = 5,
+                          method = "gcvEarth",
                           # trainControl = ControlParamteres,
-                          # tuneGrid=expand.grid(degree=1:3,seq(2, 100, length.out = 10)),
+                          tuneGrid=hyper_grid,
                           exclude_votes = TRUE) %>% 
                   mutate(differenz = abs(real - pred)) %>% 
                   mutate_if(is.numeric,~round(.,1)) %>% 
                   rename(Gemeinde=gemeinde)
 
-preddata %>% filter(Gemeinde=="Rüti")
 
 
+preddata %>% 
+       group_by(vorlage) %>% 
+       summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+
+
+preddata2 <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
+                          train = pred_all, 
+                          method = "glmboost",
+                          # method="bagEarth",
+                           # method = "earth",
+                          # trainControl = ControlParamteres,
+                          tuneGrid=glmBoostGrid,
+                          exclude_votes = TRUE) %>% 
+                  mutate(differenz = abs(real - pred)) %>% 
+                  mutate_if(is.numeric,~round(.,1)) %>% 
+                  rename(Gemeinde=gemeinde)
+
+preddata2 %>% 
+       group_by(vorlage) %>% 
+       summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+
+
+preddata3<-preddata2 %>% 
+  bind_rows(preddata) %>% 
+  group_by(Gemeinde, v_gemwkid, vorlage) %>% 
+  summarize_at(vars(pred,real), mean)%>% 
+                  mutate(differenz = abs(real - pred)) %>% 
+                  mutate_if(is.numeric,~round(.,1)) 
+
+preddata3 <- preddata3 %>% 
+  group_by(vorlage) %>% 
+  mutate(rmse=RMSE(pred,real,na.rm=TRUE)) %>% 
+  mutate(potential_error=differenz/rmse)
+
+
+preddata3 %>% 
+       group_by(vorlage) %>% 
+       summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+                  
+
+preddata2 %>% 
+  filter(Gemeinde=="Rüti")
 
 
 
 
 ```
+
+test models 
+```{r}
+
+
+models <- c("gcvEarth","glmboost","gamSpline")
+
+
+test_models <- function(model, train,...){
+  
+  predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
+                          train = train,
+                          method = model,
+                          # method="bagEarth",
+                           # method = "earth",
+                          # trainControl = ControlParamteres,
+                          exclude_votes = TRUE,...) %>% 
+    mutate(mod=model) 
+  
+}
+  
+  
+compare <- map_dfr(models, ~test_models(train=pred_all, model=.x)) 
+
+
+
+compare %>% group_by(vorlage,mod) %>% summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+
+```
+
+
 
