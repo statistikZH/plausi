@@ -8,7 +8,7 @@ predict_single_vote(
   x,
   traindata,
   testdata = NULL,
-  method = "bagEarth",
+  method = "gcvEarth",
   trainControl = NULL,
   to_exclude_vars = NULL,
   ...
@@ -38,5 +38,4 @@ Train a model for a specific vote
 \examples{
 
 predict_single_vote("Eidg1",votedata, to_exclude_vars = "Kant1")
-
 }
