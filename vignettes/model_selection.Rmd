@@ -46,6 +46,7 @@ pred_all <- pred_act %>%
   select(-v_gemeinde)
 
 
+loocv <- caret::trainControl(method = "LOOCV", number = 10)
 cv10 <- caret::trainControl(method = "cv", number = 10)
 
 earth <- 
@@ -53,9 +54,8 @@ earth <-
     Eidg3 ~ ., 
     data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
     method = "gcvEarth",
-    trControl = cv10
+    trControl = loocv
   )
-
 
 glm <- 
   cv_model_mars <- caret::train(
@@ -64,6 +64,13 @@ glm <-
     method = "glmnet",
     trControl = cv10
   )
+
+tox_svm <- train(  Eidg3 ~ ., 
+    data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
+                 method = "svmRadial", 
+                 metric = "wRMSE",
+                 maximize = FALSE,
+                 tuneLength = 10,trControl = cv10)
 
 
 tg <- expand.grid(shrinkage = seq(0.1, 1, by = 0.2), 
@@ -80,7 +87,7 @@ gbm <-
   )
 
 
-mods <- resamples(list(earth=earth, glm=glm,ranger=gbm))
+mods <- resamples(list(earth=earth2, svm=tox_svm, glm=glm,ranger=gbm))
 
 summary(mods)
 
