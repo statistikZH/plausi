@@ -25,7 +25,7 @@
 #' predict_single_vote("Eidg1",votedata, to_exclude_vars = "Kant1")
 #'
 
-predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trainControl=NULL,to_exclude_vars=NULL,geovars=c("gemeinde","v_gemwkid"),...){
+predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trControl=NULL,to_exclude_vars=NULL,geovars=c("gemeinde","v_gemwkid"),...){
 
   if(is.null(testdata)) testdata <- traindata
 
@@ -38,7 +38,7 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trai
   # varname <-  as.name(x)
   form <- stats::as.formula(paste(x,'~.'))
 
-  if(is.null(trainControl)) cv10 <- caret::trainControl(method = "cv", number = 10)
+  if(is.null(trControl)) trControl <- caret::trainControl(method = "cv", number = 10)
 
   # stelle sicher, dass Vektor aller Vorlagen die augeschlossen werden sollen (z.B. Vorlagen vom selben Abstimmungssonntag), nicht die zu vorhersagende Vorlage enthält
   if(!is.null(to_exclude_vars)) traindata <- traindata[, !names(traindata) %in% to_exclude_vars]
@@ -53,7 +53,7 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trai
 
     data = traindata %>% dplyr::select(!tidyselect::all_of(geovars)),
     method = method,
-    trControl = cv10,...
+    trControl = trControl,...
   )
 
   # cv_model_mars$bestTune
@@ -85,13 +85,13 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trai
 #'
 #' predict_votes(c("Eidg1","Kant1"), votedata, exclude_votes=TRUE)
 
-predict_votes <- function(votes,train,test=NULL,method="bagEarth",trainControl=NULL,exclude_votes=FALSE,geovars=c("mun_id","mun_name"),...){
+predict_votes <- function(votes,train,test=NULL,method="bagEarth",trControl=NULL,exclude_votes=FALSE,geovars=c("gemeinde","v_gemwkid"),...){
 
   # Schliesse die zuvorhersagenden Abstimmungen gegenseitig aus den modellen aus, wenn exclude_votes = TRUE gesetzt wird (bei mehreren Abstimmungen am selben Datum aufgrund unterschiedlichen Auszählstände sinnvoll)
   if(exclude_votes==TRUE) { to_exclude_vars <- votes} else { to_exclude_vars <- NULL }
 
   # Iteriere über die vorherzusagenden Vorlagen
-  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,to_exclude_vars=to_exclude_vars,geovars=geovars))
+  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,trControl=trControl,to_exclude_vars=to_exclude_vars,geovars=geovars))
 
 }
 
