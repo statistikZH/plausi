@@ -99,6 +99,9 @@ pred_all <- pred_all %>% mutate(Eidg3=ifelse(gemeinde=="Rüti", 66, Eidg3))
 #   nprune = seq(2, 100, length.out = 10) %>% floor()
 # )
 
+yes_out<-pred_all %>% mutate(yes_out=is_outlier_double_mad(Eidg3)) %>% filter(yes_out==TRUE)
+
+
 
 # Methode von gcvEarth auf pls angepasst
 preddata <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
@@ -120,7 +123,7 @@ preddata %>%
 
 preddata2 <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
                           train = pred_all, 
-                          method = "glmboost",
+                          method = "svmRadial",
                           # method="bagEarth",
                            # method = "earth",
                           # trainControl = ControlParamteres,
@@ -133,6 +136,10 @@ preddata2 <- predict_votes(votes = colnames(pred_act)[c(-1,-2)],
 preddata2 %>% 
        group_by(vorlage) %>% 
        summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+
+
+preddata2 %>% 
+  filter(Gemeinde=="Rüti")
 
 
 preddata3<-preddata2 %>% 
@@ -160,15 +167,19 @@ preddata %>%
 ```
 
 test models 
+
+- gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched result)
+- svmRadial is a bit less acurate on average however seems not to be affected by single false results
+
 ```{r}
 
 
-models <- c("gcvEarth","glmboost","gamSpline")
+models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
 
 
-test_models <- function(model, train,...){
+test_models <- function(votes, model, train,...){
   
-  predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
+predict_votes(votes = votes, 
                           train = train,
                           method = model,
                           # method="bagEarth",
@@ -176,11 +187,13 @@ test_models <- function(model, train,...){
                           # trainControl = ControlParamteres,
                           exclude_votes = TRUE,...) %>% 
     mutate(mod=model) 
+ 
+ 
   
 }
   
   
-compare <- map_dfr(models, ~test_models(train=pred_all, model=.x)) 
+compare <- map_dfr(models, ~test_models(votes=colnames(pred_act)[c(-1,-2)], train=pred_all, model=.x)) 
 
 
 
