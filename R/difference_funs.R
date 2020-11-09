@@ -70,7 +70,7 @@ cross_fun <- function(df, vorl1, vorl2,geo_cols=geocols){
 
 get_differences <- function(df, vorl1,vorl2, geo_cols=c("gemwkid","gemeinde")){
 
-  crosscheckdata_new <- purrr::map2_dfr(vorl1,vorl2,~cross_fun(df,.x,.y),geocols)
+  crosscheckdata_new <- purrr::map2_dfr(vorl1,vorl2,~cross_fun(df,.x,.y,geo_cols = geo_cols))
 
 }
 

@@ -69,6 +69,64 @@ DoubleMADsFromMedian <- function(x, zero.mad.action="warn"){
   return(mad.distance)
 }
 
+
+#' Detect Outliers via Median Absolute Deviation from the Median for asymmetric distributions
+#'
+#' Outlier detection based on MAD for asymetric distributions. Calculates separate MADs for each half of the distribution.
+#' Median Absolute Deviation is a robust normalization unit based on median as a population center.
+#'
+#' @param value variable of interest
+#' @param thres z-score threshold (defaults to 3.5, which is a popular choice).
+#'
+#' @return logical vector
+#' @export
+#'
+#' @examples
+#' x <- c(1, 2, 3, 3, 4, 4, 4, 5, 5.5, 6, 6, 6.5, 7, 7, 7.5, 8, 9, 12, 52, 90)
+#'
+#' isnt_outlier_double_mad(x)
+
+is_outlier_double_mad <- function(value, thres=3.5){
+
+  ifelse(plausi::DoubleMADsFromMedian(value)>=thres,TRUE,FALSE)
+  # value=value,
+  # mad=plausi::DoubleMADsFromMedian(value)
+  # )
+
+}
+
+
+#' Get boundaries beyond which a value is an outlier via Median Absolute Deviation from the Median for asymmetric distributions
+#'
+#' @param value variable of interest
+#' @param thres z-score threshold (defaults to 3.5, which is a popular choice).
+#'
+#' @return tibble with numeric range
+#' @export
+#'
+#' @examples
+outlier_range<- function(value, thres=3.5){
+
+  # iqr_thres as argument to allow for more strict criteria for groups with high variance?
+  # if(IQR(value)>iqr_thres) thres <- 1
+
+
+  tibble(median=median(value),
+         iqr=IQR(value),
+         lower=median(value)-plausi::DoubleMAD(value)[1]*thres,
+         upper=median(value)+plausi::DoubleMAD(value)[2]*thres
+  )
+
+  # %>%
+  #   mutate(lower=ifelse(lower<0,0,lower),
+  #          upper=ifelse(upper>100,100,upper))
+
+}
+
+
+
+
+
 # useful functions for outlier detection (combined)
 # http://www.questionflow.org/2017/12/26/combined-outlier-detection-with-dplyr-and-ruler/
 
