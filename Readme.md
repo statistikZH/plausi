@@ -1,10 +1,8 @@
-![](https://opendata.swiss/content/uploads/2016/02/kt_zh.png)
-
 # plausi
 
 ## R-Package für die Plausibilisierung von Abstimmungsresultaten
 
-Das plausi package enthält Funktionen die in der PlausiApp verwendet werden:
+Das plausi package enthält Funktionen die der Plausibilisierung von Abstimmungsresultaten dienen. 
 
 - Ausreissererkennung
 - Berechnung von Differenzen zwischen allen möglichen Kombinationen (Stimmbeteiligung verschiedener Vorlagen z.B.)
@@ -13,3 +11,4 @@ Das plausi package enthält Funktionen die in der PlausiApp verwendet werden:
 Installation via gittea:
 
 remotes::install_url("http://10.73.108.135:8788/STAT/plausi/archive/master.zip").
+
