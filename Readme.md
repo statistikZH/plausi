@@ -1,3 +1,5 @@
+![](https://opendata.swiss/content/uploads/2016/02/kt_zh.png)
+
 # plausi
 
 ## R-Package für die Plausibilisierung von Abstimmungsresultaten
