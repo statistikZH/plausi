@@ -1,0 +1,101 @@
+---
+title: "Vorhersage Ja-Anteile"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{prediction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(plausi)
+library(tidyverse)
+library(swissdd)
+library(earth)
+
+# BFS Nummern ausgewählter Gemeinden
+bfs_nrs <- c(6,7,10,11,12,87,219,294 ,181,38,60,92,119,182,218)
+
+
+# Sys.setenv(https_proxy="")
+# Beziehe historische Daten
+results <- swissdd::get_nationalvotes(from_date="2017-03-01", to_date="2020-09-27")
+
+# Formattiere historische Daten um
+data <- results %>%
+  filter(canton_id==1) %>% 
+  mutate(id=paste0("v",id)) %>%
+  select(jaStimmenInProzent, id, mun_id, mun_name) %>%
+  pivot_wider(names_from=id, values_from = jaStimmenInProzent) %>% 
+ drop_na()
+
+# Trainingsdatensatz erstellen (nur ausgezählte Gemeinden)
+train <- data %>% 
+  mutate_at(vars(v6310,v6330),
+            ~ifelse(mun_id %in% bfs_nrs,NA, .))
+
+predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=data ,exclude_votes = TRUE, geo_vars=c("mun_id","mun_name" ))
+
+
+# Vorhersagefehler
+predicted_results %>% 
+  group_by(vorlage) %>% 
+  summarize(rmse=RMSE(pred,real))
+
+```
+# Modelle vergleichen
+
+
+test models 
+
+- gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched yes and no-shares)
+- svmRadial is a bit less acurate on average however seems not to be affected by single false results
+
+```{r}
+
+
+models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
+
+
+test_models <- function(votes, model, train,...){
+  
+predict_votes(votes = votes, 
+                          train = train,
+                          method = model,
+                          # method="bagEarth",
+                           # method = "earth",
+                          # trainControl = ControlParamteres,
+                          exclude_votes = TRUE,...) %>% 
+    mutate(mod=model) 
+ 
+ 
+  
+}
+
+compare <- map_dfr(models, ~test_models(votes=colnames(pred_act)[c(-1,-2)], train=pred_all, model=.x)) 
+
+
+compare %>% group_by(vorlage,mod) %>% summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+
+```
+
+
+
+```{r}
+
+
+
+
+
+
+
+
+```
+
