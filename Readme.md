@@ -4,7 +4,7 @@
 
 ## R-Package für die Plausibilisierung von Abstimmungsresultaten
 
-Das plausi-package enhält Funktionen für die R-gestützte Abstimmungsforensik. Es enthält Funktionen die es erlauben statistische Auffälligkeiten und Anomalien in Abstimmungsresultaten zu identifizieren. 
+Das plausi-package dient der R-gestützten Abstimmungsforensik. Es enthält Funktionen die es erlauben statistische Auffälligkeiten und Anomalien in Abstimmungsresultaten zu identifizieren. 
 
 - Ausreissererkennung für kleine Fallzahlen wie auch schiefe Verteilungen
 - Berechnung von Differenzen zwischen allen möglichen Kombinationen von Vorlagen (z.B. zwecks systematischem Vergleich der Stimmbeteiligung verschiedener Vorlagen über alle Auszählkreise hinweg)
