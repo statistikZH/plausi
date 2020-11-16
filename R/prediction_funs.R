@@ -4,8 +4,9 @@
 #' @param traindata data used to train the model containing the dependent variable and the predictor-columns
 #' @param testdata optional dataset structured identically as the trainingdataset on which the prediction should be run. Defaults to NULL, which entails that the prediction is run on the trainingdataset.
 #' @param method method available in the caret-package which should be used for the prediction
-#' @param trainControl parameters to tune the model
+#' @param trControl parameters to tune the model
 #' @param to_exclude_vars variables that should be excluded from the model
+#' @param geovars variables containing labels and ids of the spatial units
 #' @param ... optional parameters that can be passed to the caret::train function
 #' @importFrom tidyr drop_na
 #' @importFrom stats as.formula
@@ -74,8 +75,9 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trCo
 #' @param train data used to train the model containing the variables to be predicted and the predictor-columns
 #' @param test  optional dataset structured identically as the trainingdataset on which the prediction
 #' @param method method available in the caret-package which should be used for the prediction
-#' @param trainControl parameters to tune the model
+#' @param trControl parameters to tune the model
 #' @param exclude_votes if TRUE the variables to be predicted will be excluded from each others models
+#' @param geovars variables containing labels and ids of the spatial units
 #' @param ... optional parameters that can be passed to the caret::train function
 #'
 #' @return data.frame
