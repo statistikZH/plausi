@@ -56,7 +56,7 @@ Plausi baut auf dem caret-package auf und lässt es somit zu, zwischen unzählig
 
 Dies erleichtert auch die Wahl der besten Modelle mittels Vergleich der Vorhersagegenauigkeit. 
 
-Das 'gvcEarth' Model, ein MARS-Modell aus dem 'earth' package (Splines) wie auch ein svm-Modell scheiden am besten ab. Das MARS-Modell ist jedoch etwas anfälliger für Overfitting, auch vermeintlich falsche Ja-Anteile könnten annähernd als plausibel vorhergesagt werden.
+Das 'gvcEarth' Model, ein MARS-Modell aus dem 'earth' package (Splines) wie auch ein svm-Modell schneiden am besten ab. Doch neben der Vorhersagegenauigkeit sollte das Modell auch möglichst robust gegenüber 'falschen' Resultaten sein bzw. diese sollten die Vorhersage für eine Gemeinde nicht zu stark beeinflussen.
 
 - gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched yes and no-shares)
 - svmRadial is a bit less acurate on average however seems not to be affected by single false results
