@@ -31,7 +31,7 @@ cross_fun <- function(df, vorl1, vorl2,geo_cols=geocols){
 
   df %>% dplyr::mutate(!!varname :=.data[[as.character(vorl1)]] -.data[[as.character(vorl2)]]) %>%
     dplyr::select(tidyselect::all_of(geo_cols),!!varname) %>%
-    pivot_longer(cols=varname,names_to="combination")
+    pivot_longer(cols=varname,names_to="combination",values_to="difference")
 }
 
 
