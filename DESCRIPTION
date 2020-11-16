@@ -4,8 +4,7 @@ Title: What the Package Does (Title Case)
 Version: 0.1.0.9999
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: Das plausi-package dient der R-gestützten Abstimmungsforensik. 
-Es enthält Funktionen die es erlauben statistische Auffälligkeiten und Anomalien in Abstimmungsresultaten zu identifizieren.
+Description: Toolkit for voting and election forensics in R that allows to identify statistical anomalies in voting results.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
