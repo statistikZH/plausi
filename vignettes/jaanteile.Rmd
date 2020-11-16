@@ -24,7 +24,7 @@ library(earth)
 bfs_nrs <- c(6,7,10,11,12,87,219,294 ,181,38,60,92,119,182,218)
 
 
-# Sys.setenv(https_proxy="")
+Sys.setenv(https_proxy="")
 # Beziehe historische Daten
 results <- swissdd::get_nationalvotes(from_date="2017-03-01", to_date="2020-09-27")
 
@@ -36,12 +36,14 @@ data <- results %>%
   pivot_wider(names_from=id, values_from = jaStimmenInProzent) %>% 
  drop_na()
 
+test <- data
+
 # Trainingsdatensatz erstellen (nur ausgezählte Gemeinden)
 train <- data %>% 
   mutate_at(vars(v6310,v6330),
             ~ifelse(mun_id %in% bfs_nrs,NA, .))
 
-predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=data ,exclude_votes = TRUE, geo_vars=c("mun_id","mun_name" ))
+predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=data ,exclude_votes = TRUE, geovars=c("mun_id","mun_name" ))
 
 
 # Vorhersagefehler
@@ -53,36 +55,39 @@ predicted_results %>%
 # Modelle vergleichen
 
 
-test models 
+Lets say we'd want to compare different models in terms of acuracy.
 
 - gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched yes and no-shares)
 - svmRadial is a bit less acurate on average however seems not to be affected by single false results
 
 ```{r}
 
-
 models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
 
 
-test_models <- function(votes, model, train,...){
+test_models <- function(votes, train,test, model,...){
   
-predict_votes(votes = votes, 
+plausi::predict_votes(votes = votes, 
                           train = train,
-                          method = model,
-                          # method="bagEarth",
-                           # method = "earth",
-                          # trainControl = ControlParamteres,
-                          exclude_votes = TRUE,...) %>% 
-    mutate(mod=model) 
+                          test=test,
+                           method = model,
+                          exclude_votes = TRUE,
+                      
+              ...) %>% 
+    dplyr::mutate(mod=model) 
  
  
   
 }
 
-compare <- map_dfr(models, ~test_models(votes=colnames(pred_act)[c(-1,-2)], train=pred_all, model=.x)) 
+comparison <- map_dfr(models, ~test_models(votes=colnames(train)[c(-1,-2)][3],
+                                        train=train,
+                                        test=test,
+                                        model=.x,
+                                        geovars=c("mun_id","mun_name")))
 
 
-compare %>% group_by(vorlage,mod) %>% summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+comparison %>% group_by(vorlage,mod) %>% summarize(rmse=RMSE(pred,real,na.rm=TRUE))
 
 ```
 
