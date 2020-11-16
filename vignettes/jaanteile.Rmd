@@ -28,22 +28,20 @@ Sys.setenv(https_proxy="")
 # Beziehe historische Daten
 results <- swissdd::get_nationalvotes(from_date="2017-03-01", to_date="2020-09-27")
 
-# Formattiere historische Daten um
-data <- results %>%
+# Formattiere historische Daten um : eine Spalte je Vorlage
+testdata <- results %>%
   filter(canton_id==1) %>% 
   mutate(id=paste0("v",id)) %>%
   select(jaStimmenInProzent, id, mun_id, mun_name) %>%
   pivot_wider(names_from=id, values_from = jaStimmenInProzent) %>% 
  drop_na()
 
-test <- data
-
 # Trainingsdatensatz erstellen (nur ausgezählte Gemeinden)
 train <- data %>% 
   mutate_at(vars(v6310,v6330),
             ~ifelse(mun_id %in% bfs_nrs,NA, .))
 
-predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=data ,exclude_votes = TRUE, geovars=c("mun_id","mun_name" ))
+predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=testdata ,exclude_votes = TRUE, geovars=c("mun_id","mun_name" ))
 
 
 # Vorhersagefehler
@@ -54,17 +52,20 @@ predicted_results %>%
 ```
 # Modelle vergleichen
 
+Plausi baut auf dem caret-package auf und lässt es somit zu, zwischen unzähligen Machine-Learning Algorithmen zu wählen und einfach umzustellen. 
 
-Lets say we'd want to compare different models in terms of acuracy.
+Dies erleichtert auch die Wahl der besten Modelle mittels Vergleich der Vorhersagegenauigkeit. 
+
+Das 'gvcEarth' Model, ein MARS-Modell aus dem 'earth' package (Splines) wie auch ein svm-Modell scheiden am besten ab. Das MARS-Modell ist jedoch etwas anfälliger für Overfitting, auch vermeintlich falsche Ja-Anteile könnten annähernd als plausibel vorhergesagt werden.
 
 - gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched yes and no-shares)
 - svmRadial is a bit less acurate on average however seems not to be affected by single false results
 
 ```{r}
-
+# definiere welche Modelle verglichen werden sollen
 models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
 
-
+# Funktion für Vergleich unterschiedlicher Modelle
 test_models <- function(votes, train,test, model,...){
   
 plausi::predict_votes(votes = votes, 
@@ -80,7 +81,8 @@ plausi::predict_votes(votes = votes,
   
 }
 
-comparison <- map_dfr(models, ~test_models(votes=colnames(train)[c(-1,-2)][3],
+#Vergleich anhand der Vorhersage für drei Vorlagen
+comparison <- map_dfr(models, ~test_models(votes=colnames(train)[c(-1,-2)][1:3],
                                         train=train,
                                         test=test,
                                         model=.x,
@@ -92,15 +94,4 @@ comparison %>% group_by(vorlage,mod) %>% summarize(rmse=RMSE(pred,real,na.rm=TRU
 ```
 
 
-
-```{r}
-
-
-
-
-
-
-
-
-```
 
