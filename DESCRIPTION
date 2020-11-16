@@ -1,11 +1,11 @@
 Package: plausi
 Type: Package
 Title: What the Package Does (Title Case)
-Version: 0.1.0
+Version: 0.1.0.9999
 Author: Who wrote it
 Maintainer: The package maintainer <yourself@somewhere.net>
-Description: More about what it does (maybe more than one line)
-    Use four spaces when indenting paragraphs within the Description.
+Description: Das plausi-package dient der R-gestützten Abstimmungsforensik. 
+Es enthält Funktionen die es erlauben statistische Auffälligkeiten und Anomalien in Abstimmungsresultaten zu identifizieren.
 License: GPL-2
 Encoding: UTF-8
 LazyData: true
