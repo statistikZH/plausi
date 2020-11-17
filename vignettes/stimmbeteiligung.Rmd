@@ -7,6 +7,10 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+Um Anomalien in der Stimmbeteiligung ausfindig zu machen bietet das plausi package Funktionen, die es erlauben die Differenz zwischen der Beteiligungswerten verschiedener Vorlagen systematisch über alle Zählkreise hinweg zu vergleichen.
+
+In der Regel bestehen relativ klare Muster - gewisse Vorlagen mobilisieren stärker als andere. Hierbei ist das Thema der Vorlage, die Intensität des Abstimmungskampfes wichtig als auch die Bezugsebene des Geschäfts. Kantonale Vorlagen weissen i.d.R. eine tiefere Beteiligung aus als nationale Vorlagen, die am selben Abstimmungstag zur Abstimmung kommen.
+
 ```{r setup}
 library(plausi)
 library(swissdd)
