@@ -1,6 +1,10 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "Auffällige Stimmbeteiligungswerte identifizieren"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{prediction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
 ---
 
 ```{r setup}
@@ -8,7 +12,8 @@ library(plausi)
 library(swissdd)
 library(tidyverse)
 ```
-
+# Datenbezug
+Via swissdd package können die Daten für einen Abstimmungstermin der Wahl bezogen werden. 
 ```{r}
 
 Sys.getenv("https_proxy")
