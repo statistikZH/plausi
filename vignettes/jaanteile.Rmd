@@ -100,107 +100,49 @@ comparison %>%
 ```
 
 
-# Fehlerbereich pro Gemeinde in Vergangenheit
+# Streuung der Vorhersagefehler je Vorlage in der Vergangenheit
+
 ```{r}
-# 
-# 
-# 
-# 
-# if (!is.na(testprop)){
-# 
-#     set.seed(101) # Set Seed so that same sample can be reproduced in future also
-#     # Now Selecting 75% of data as sample from total 'n' rows of the data
-#     # sample <- sample.int(n = nrow(preddataframe), size = floor(.75*nrow(preddataframe)), replace = F)
-# 
-#     sample <- sample.int(n = nrow(preddataframe), size = floor(testprop*nrow(preddataframe)), replace = F)
-# 
-#     # train <- preddataframe[sample, ]
-#     # test  <- preddataframe[-sample, ]
-# 
-#     # #nur zu testzwecken
-#     # preddataframe[sample, ]$gebietAusgezaehlt <- TRUE
-#     # preddataframe[-sample, ]$gebietAusgezaehlt <- FALSE
-# 
-#     #ANPASSEN!
-#     # preddataframe[sample, ]$gebietAusgezaehlt <- TRUE
-#     preddataframe[-sample, ]$jaStimmenAbsolut <- NA
-# 
-#   }
-# 
-# 
-# predict_single_vote
+
+# predict_single_vote("v6310", traindata=testdata, testprop = 0.1,geovars=c("mun_id","mun_name"))
+
+
+predictions <- predict_votes(colnames(testdata)[c(-1,-2)][1:20], train=testdata, testprop = 0.3,geovars=c("mun_id","mun_name"))
+
+
+gem_pred <- predictions %>% 
+  mutate(error=real-pred) %>% 
+  group_by(vorlage) %>% 
+  mutate(rmse=RMSE(pred,real)) %>% 
+  mutate(error_rmse=error/rmse) %>% 
+  mutate(outlier=is_outlier_double_mad(error_rmse))
   
-# # predict single votes funktion umschreiben für testprop
-# 
-# function(x,traindata,testdata=NULL,method="bagEarth",trControl=NULL,to_exclude_vars=NULL,geovars=c("gemeinde","v_gemwkid"),testprop=NA,...){
-# 
-# 
-# if(is.null(testdata)) testdata <- traindata
-# 
-# 
-# # Simulate Training data by generating a random split test/train data with a certain number of   
-# if (!is.na(testprop)){
-#   
-#   if(!is.na(traindata)) message("By setting a testprop the testdata is split into randomly generated training data. There is thus no need to supply a real trainingdataset via traindata argument.")
-# 
-#     set.seed(101) # Set Seed so that same sample can be reproduced in future also
-#     # Now Selecting 75% of data as sample from total 'n' rows of the data
-#     # sample <- sample.int(n = nrow(preddataframe), size = floor(.75*nrow(preddataframe)), replace = F)
-# 
-#     sample <- sample.int(n = nrow(train), size = floor(testprop*nrow(traindata)), replace = F)
-#     
-#     traindata[-sample, ][[x]] <- NA
-#     
-# 
-#   }
-# 
-#   # schliesse Beobachtungen aus Trainingsdatensatz aus, die NAs enthalten
-#   traindata <- traindata %>% tidyr::drop_na(x)
-# 
-#   # Schliesse die zuvorhersagenden Abstimmungen gegenseitig aus den modellen aus, wenn to_exclude_vars übergeben werden
-#   if(!is.null(to_exclude_vars)) to_exclude_vars<-  to_exclude_vars[!to_exclude_vars %in% x]
-# 
-#   # varname <-  as.name(x)
-#   form <- stats::as.formula(paste(x,'~.'))
-# 
-#   if(is.null(trControl)) trControl <- caret::trainControl(method = "cv", number = 10)
-# 
-#   # stelle sicher, dass Vektor aller Vorlagen die augeschlossen werden sollen (z.B. Vorlagen vom selben Abstimmungssonntag), nicht die zu vorhersagende Vorlage enthält
-#   if(!is.null(to_exclude_vars)) traindata <- traindata[, !names(traindata) %in% to_exclude_vars]
-#   if(!is.null(to_exclude_vars)&!is.null(testdata)) testdata <- testdata[, !names(testdata) %in% to_exclude_vars]
-# 
-#   # Um zu prüfen, ob gegenseitiger Ausschluss von Vorlagen desselben Abstimmungssonntags funktioniert ->
-#   # print(colnames(traindata))
-# 
-#   # Trainiere Model
-#   cv_model_mars <- caret::train(
-#     form,
-# 
-#     data = traindata %>% dplyr::select(!tidyselect::all_of(geovars)),
-#     method = method,
-#     trControl = trControl,...
-#   )
-# 
-#   # cv_model_mars$bestTune
-# 
-# 
-#   testdata$pred <- stats::predict(cv_model_mars,testdata)
-# 
-#   # TO DO :
-#   # Gebietslabel / ID nicht hart vorgeben, sondern via parameter der Funktion übernehmen
-#   testdata %>% select(tidyselect::all_of(geovars), pred, real=x) %>%
-#     mutate(vorlage=x)
-# }
 
-
-
-
-
-
-
+ggplot(gem_pred, aes(vorlage, error))+
+  geom_jitter(aes(color=outlier))+
+  geom_violin(alpha=0.5)+
+  scale_color_viridis_d()+
+  theme_minimal()
 
 ```
 
+
+# Fehlerbereich pro Gemeinde in Vergangenheit
+
+```{r}
+#  
+
+gem_pred %>% 
+group_by(mun_id,mun_name) %>% 
+summarize(range_lower=outlier_range(error_rmse)$lower,range_uppper=outlier_range(error_rmse)$upper)
+
+
+# 
+# what <- predictions %>% 
+#   mutate(error=real-pred)
+
+
+```
 
 
 
