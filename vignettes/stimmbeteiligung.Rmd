@@ -1,0 +1,79 @@
+---
+title: "Auffällige Stimmbeteiligungswerte identifizieren"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{prediction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+Um Anomalien in der Stimmbeteiligung ausfindig zu machen bietet das plausi package Funktionen, die es erlauben die Differenz zwischen der Beteiligungswerten verschiedener Vorlagen systematisch über alle Zählkreise hinweg zu vergleichen.
+
+In der Regel bestehen relativ klare Muster - gewisse Vorlagen mobilisieren stärker als andere. Hierbei ist das Thema der Vorlage, die Intensität des Abstimmungskampfes wichtig als auch die Bezugsebene des Geschäfts. Kantonale Vorlagen weissen i.d.R. eine tiefere Beteiligung aus als nationale Vorlagen, die am selben Abstimmungstag zur Abstimmung kommen.
+
+```{r setup}
+library(plausi)
+library(swissdd)
+library(tidyverse)
+```
+# Datenbezug
+Via swissdd package können die Daten für einen Abstimmungstermin der Wahl bezogen werden. 
+```{r}
+
+Sys.getenv("https_proxy")
+Sys.setenv(https_proxy="")
+
+data <- swissdd::get_nationalvotes(votedates = c("2020-09-27"))
+
+combinations <-as.data.frame(t(combn(unique(data$id),2)))
+
+data_wide <- data %>% 
+  select(id, canton_name,mun_name, mun_id, stimmbeteiligungInProzent) %>% 
+  pivot_wider(names_from=id,values_from=stimmbeteiligungInProzent) %>% 
+  mutate_if(is.character,as.factor) %>% 
+  filter(canton_name=="Zürich")
+
+cross_fun(data_wide, combinations$V1[2],combinations$V2[2],geo_cols=c("canton_name","mun_name","mun_id"))
+
+diff <- get_differences(data_wide,combinations$V1,combinations$V2,geo_cols=c("canton_name","mun_name","mun_id")) 
+```
+
+
+```{r}
+diff2 <- diff %>% 
+  group_by(combination) %>% 
+  mutate(outlier=is_outlier_double_mad(value,thres=5))
+```
+
+
+```{r}
+ggplot(diff2, aes(combination, value))+
+  geom_violin()+
+  geom_jitter(alpha=0.3, aes(color=outlier))+
+  theme_minimal()+
+  scale_fill_viridis_d()
+
+```
+
+
+# Welche Vorlagen sind auffällig?
+
+Um herauszufinden welche der Vorlagen dazu führen, dass Kombinationen aufällig sind:
+
+- Extrahiere Vorlage-Ids aus Kombinationen
+- Formattiere Daten um um zählen zu können wie oft eine Vorlage in auffälligen Kombinationen vorkommt.
+
+
+
+```{r}
+
+problem_vorlagen <- diff2 %>% 
+  separate(combination,into=c("vorlage1","vorlage2"), sep="_") %>% 
+  filter(outlier==TRUE) %>% 
+  pivot_longer( cols = -c(canton_name,mun_name,mun_id, value, outlier), names_to="vorlage", values_to="vorlage_id") %>% 
+  group_by(mun_name,mun_id,vorlage_id) %>% 
+  summarize(n=n())
+  
+
+```
+

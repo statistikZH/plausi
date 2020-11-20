@@ -4,8 +4,9 @@
 #' @param traindata data used to train the model containing the dependent variable and the predictor-columns
 #' @param testdata optional dataset structured identically as the trainingdataset on which the prediction should be run. Defaults to NULL, which entails that the prediction is run on the trainingdataset.
 #' @param method method available in the caret-package which should be used for the prediction
-#' @param trainControl parameters to tune the model
+#' @param trControl parameters to tune the model
 #' @param to_exclude_vars variables that should be excluded from the model
+#' @param geovars variables containing labels and ids of the spatial units
 #' @param ... optional parameters that can be passed to the caret::train function
 #' @importFrom tidyr drop_na
 #' @importFrom stats as.formula
@@ -23,8 +24,9 @@
 #' @examples
 #'
 #' predict_single_vote("Eidg1",votedata, to_exclude_vars = "Kant1")
+#'
 
-predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trainControl=NULL,to_exclude_vars=NULL,...){
+predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trControl=NULL,to_exclude_vars=NULL,geovars=c("gemeinde","v_gemwkid"),...){
 
   if(is.null(testdata)) testdata <- traindata
 
@@ -37,7 +39,7 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trai
   # varname <-  as.name(x)
   form <- stats::as.formula(paste(x,'~.'))
 
-  if(is.null(trainControl)) cv10 <- caret::trainControl(method = "cv", number = 10)
+  if(is.null(trControl)) trControl <- caret::trainControl(method = "cv", number = 10)
 
   # stelle sicher, dass Vektor aller Vorlagen die augeschlossen werden sollen (z.B. Vorlagen vom selben Abstimmungssonntag), nicht die zu vorhersagende Vorlage enthält
   if(!is.null(to_exclude_vars)) traindata <- traindata[, !names(traindata) %in% to_exclude_vars]
@@ -47,24 +49,24 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trai
   # print(colnames(traindata))
 
   # Trainiere Model
-  cv_model <- caret::train(
+  cv_model_mars <- caret::train(
     form,
-    data = traindata %>% dplyr::select(-v_gemwkid,-gemeinde), # TODO: Erlaube Gemeinde IDs ( Bezeichnungen via parameter zu ersetzen - areaid / name)
+
+    data = traindata %>% dplyr::select(!tidyselect::all_of(geovars)),
     method = method,
-    trControl = cv10,
-    ...
+    trControl = trControl,...
   )
 
   # cv_model_mars$bestTune
 
-  testdata$pred <- predict(cv_model,testdata)
+
+  testdata$pred <- stats::predict(cv_model_mars,testdata)
 
   # TO DO :
   # Gebietslabel / ID nicht hart vorgeben, sondern via parameter der Funktion übernehmen
-  testdata %>% dplyr::select(gemeinde,v_gemwkid, pred, real=x) %>%
-    dplyr::mutate(vorlage=x)
+  testdata %>% select(tidyselect::all_of(geovars), pred, real=x) %>%
+    mutate(vorlage=x)
 }
-
 
 
 #' Run predictions for multiple columns (specifically votes) in a dataset
@@ -73,8 +75,9 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trai
 #' @param train data used to train the model containing the variables to be predicted and the predictor-columns
 #' @param test  optional dataset structured identically as the trainingdataset on which the prediction
 #' @param method method available in the caret-package which should be used for the prediction
-#' @param trainControl parameters to tune the model
+#' @param trControl parameters to tune the model
 #' @param exclude_votes if TRUE the variables to be predicted will be excluded from each others models
+#' @param geovars variables containing labels and ids of the spatial units
 #' @param ... optional parameters that can be passed to the caret::train function
 #'
 #' @return data.frame
@@ -84,13 +87,13 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="gcvEarth",trai
 #'
 #' predict_votes(c("Eidg1","Kant1"), votedata, exclude_votes=TRUE)
 
-predict_votes <- function(votes,train,test=NULL,method="bagEarth",trainControl=NULL,exclude_votes=FALSE,...){
+predict_votes <- function(votes,train,test=NULL,method="bagEarth",trControl=NULL,exclude_votes=FALSE,geovars=c("gemeinde","v_gemwkid"),...){
 
   # Schliesse die zuvorhersagenden Abstimmungen gegenseitig aus den modellen aus, wenn exclude_votes = TRUE gesetzt wird (bei mehreren Abstimmungen am selben Datum aufgrund unterschiedlichen Auszählstände sinnvoll)
   if(exclude_votes==TRUE) { to_exclude_vars <- votes} else { to_exclude_vars <- NULL }
 
   # Iteriere über die vorherzusagenden Vorlagen
-  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,to_exclude_vars=to_exclude_vars))
+  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,trControl=trControl,to_exclude_vars=to_exclude_vars,geovars=geovars))
 
 }
 
@@ -120,5 +123,3 @@ predict_votes <- function(votes,train,test=NULL,method="bagEarth",trainControl=N
 RMSE = function(m, o){
   sqrt(mean((m - o)^2))
 }
-
-

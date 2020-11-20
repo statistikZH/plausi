@@ -1,0 +1,206 @@
+---
+title: "Vorhersage Ja-Anteile"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{prediction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Ein Glücksfall: stabiles Abstimmungsverhalten über die Zeit. Die ideologische Positionierung einer Gemeinde verändert sich nur sehr langsam. Daher können wir für einen Abstimmungssontag anhand der Daten der Vergangenheit Vorlagen identifizieren, welche ähnliche Zustimmungsmuster aufweisen und für die Gemeinden eine Vorhersage treffen und simulieren, was wir anhand der Vergangneheit erwarten würden.
+```{r setup}
+library(plausi)
+library(tidyverse)
+library(swissdd)
+library(earth)
+
+# BFS Nummern ausgewählter Gemeinden
+bfs_nrs <- c(6,7,10,11,12,87,219,294 ,181,38,60,92,119,182,218)
+
+
+Sys.setenv(https_proxy="")
+# Beziehe historische Daten
+results <- swissdd::get_nationalvotes(from_date="2017-03-01", to_date="2020-09-27")
+
+# Formattiere historische Daten um : eine Spalte je Vorlage
+testdata <- results %>%
+  filter(canton_id==1) %>% 
+  mutate(id=paste0("v",id)) %>%
+  select(jaStimmenInProzent, id, mun_id, mun_name) %>%
+  pivot_wider(names_from=id, values_from = jaStimmenInProzent) %>% 
+ drop_na()
+
+# Trainingsdatensatz erstellen (nur ausgezählte Gemeinden)
+train <- data %>% 
+  mutate_at(vars(v6310,v6330),
+            ~ifelse(mun_id %in% bfs_nrs,NA, .))
+
+predicted_results <- predict_votes(c("v6330","v6310"),train=train, test=testdata ,exclude_votes = TRUE, geovars=c("mun_id","mun_name" ))
+
+
+# Vorhersagefehler
+predicted_results %>% 
+  group_by(vorlage) %>% 
+  summarize(rmse=RMSE(pred,real))
+
+```
+# Modelle vergleichen
+
+Plausi baut auf dem caret-package auf und lässt es somit zu, zwischen unzähligen Machine-Learning Algorithmen zu wählen und einfach umzustellen. Dies erleichtert es Modelle hinsichtlich Vorhersagegenauigkeit zu vergleichen.
+
+Das 'gvcEarth' Model, ein MARS-Modell aus dem 'earth' package (Splines) wie auch ein svm-Modell schneiden am besten ab. Doch neben der Vorhersagegenauigkeit sollte das Modell auch möglichst robust gegenüber vermeintlich falschen Resultaten sein bzw. diese sollten die Vorhersage für eine Gemeinde nicht zu stark beeinflussen.
+
+- gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched yes and no-shares)
+- svmRadial is a bit less acurate on average however seems not to be affected by single false results
+
+```{r}
+# Modelle die verglichen werden sollen
+models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
+
+# Funktion für Vergleich unterschiedlicher Modelle
+test_models <- function(votes, train,test, model,...){
+```
+
+
+```{r}
+plausi::predict_votes(votes = votes, 
+                          train = train,
+                          test=test,
+                           method = model,
+                          exclude_votes = TRUE,
+                      
+              ...) %>% 
+    dplyr::mutate(mod=model) 
+ 
+ 
+  
+}
+
+#Vergleich anhand der Vorhersage für drei Vorlagen
+comparison <- map_dfr(models, ~test_models(votes=colnames(train)[c(-1,-2)][1:3],
+                                        train=train,
+                                        test=test,
+                                        model=.x,
+                                        geovars=c("mun_id","mun_name")))
+
+# Vorhersagefehler je Modell pro Vorlage
+comparison %>% 
+  group_by(vorlage,mod) %>% 
+  summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+
+
+```
+
+
+# Fehlerbereich pro Gemeinde in Vergangenheit
+```{r}
+# 
+# 
+# 
+# 
+# if (!is.na(testprop)){
+# 
+#     set.seed(101) # Set Seed so that same sample can be reproduced in future also
+#     # Now Selecting 75% of data as sample from total 'n' rows of the data
+#     # sample <- sample.int(n = nrow(preddataframe), size = floor(.75*nrow(preddataframe)), replace = F)
+# 
+#     sample <- sample.int(n = nrow(preddataframe), size = floor(testprop*nrow(preddataframe)), replace = F)
+# 
+#     # train <- preddataframe[sample, ]
+#     # test  <- preddataframe[-sample, ]
+# 
+#     # #nur zu testzwecken
+#     # preddataframe[sample, ]$gebietAusgezaehlt <- TRUE
+#     # preddataframe[-sample, ]$gebietAusgezaehlt <- FALSE
+# 
+#     #ANPASSEN!
+#     # preddataframe[sample, ]$gebietAusgezaehlt <- TRUE
+#     preddataframe[-sample, ]$jaStimmenAbsolut <- NA
+# 
+#   }
+# 
+# 
+# predict_single_vote
+  
+# # predict single votes funktion umschreiben für testprop
+# 
+# function(x,traindata,testdata=NULL,method="bagEarth",trControl=NULL,to_exclude_vars=NULL,geovars=c("gemeinde","v_gemwkid"),testprop=NA,...){
+# 
+# 
+# if(is.null(testdata)) testdata <- traindata
+# 
+# 
+# # Simulate Training data by generating a random split test/train data with a certain number of   
+# if (!is.na(testprop)){
+#   
+#   if(!is.na(traindata)) message("By setting a testprop the testdata is split into randomly generated training data. There is thus no need to supply a real trainingdataset via traindata argument.")
+# 
+#     set.seed(101) # Set Seed so that same sample can be reproduced in future also
+#     # Now Selecting 75% of data as sample from total 'n' rows of the data
+#     # sample <- sample.int(n = nrow(preddataframe), size = floor(.75*nrow(preddataframe)), replace = F)
+# 
+#     sample <- sample.int(n = nrow(train), size = floor(testprop*nrow(traindata)), replace = F)
+#     
+#     traindata[-sample, ][[x]] <- NA
+#     
+# 
+#   }
+# 
+#   # schliesse Beobachtungen aus Trainingsdatensatz aus, die NAs enthalten
+#   traindata <- traindata %>% tidyr::drop_na(x)
+# 
+#   # Schliesse die zuvorhersagenden Abstimmungen gegenseitig aus den modellen aus, wenn to_exclude_vars übergeben werden
+#   if(!is.null(to_exclude_vars)) to_exclude_vars<-  to_exclude_vars[!to_exclude_vars %in% x]
+# 
+#   # varname <-  as.name(x)
+#   form <- stats::as.formula(paste(x,'~.'))
+# 
+#   if(is.null(trControl)) trControl <- caret::trainControl(method = "cv", number = 10)
+# 
+#   # stelle sicher, dass Vektor aller Vorlagen die augeschlossen werden sollen (z.B. Vorlagen vom selben Abstimmungssonntag), nicht die zu vorhersagende Vorlage enthält
+#   if(!is.null(to_exclude_vars)) traindata <- traindata[, !names(traindata) %in% to_exclude_vars]
+#   if(!is.null(to_exclude_vars)&!is.null(testdata)) testdata <- testdata[, !names(testdata) %in% to_exclude_vars]
+# 
+#   # Um zu prüfen, ob gegenseitiger Ausschluss von Vorlagen desselben Abstimmungssonntags funktioniert ->
+#   # print(colnames(traindata))
+# 
+#   # Trainiere Model
+#   cv_model_mars <- caret::train(
+#     form,
+# 
+#     data = traindata %>% dplyr::select(!tidyselect::all_of(geovars)),
+#     method = method,
+#     trControl = trControl,...
+#   )
+# 
+#   # cv_model_mars$bestTune
+# 
+# 
+#   testdata$pred <- stats::predict(cv_model_mars,testdata)
+# 
+#   # TO DO :
+#   # Gebietslabel / ID nicht hart vorgeben, sondern via parameter der Funktion übernehmen
+#   testdata %>% select(tidyselect::all_of(geovars), pred, real=x) %>%
+#     mutate(vorlage=x)
+# }
+
+
+
+
+
+
+
+
+```
+
+
+
+

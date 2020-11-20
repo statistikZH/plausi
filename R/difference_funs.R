@@ -25,12 +25,13 @@
 #' # difference between columns named as the first combination
 #' cross_fun(crosscheckdata,combinations$V1[1],combinations$V2[1])
 #'
-cross_fun <- function(df, vorl1, vorl2){
+cross_fun <- function(df, vorl1, vorl2,geo_cols=geocols){
 
   varname <- paste0(vorl1,"_",vorl2)
 
   df %>% dplyr::mutate(!!varname :=.data[[as.character(vorl1)]] -.data[[as.character(vorl2)]]) %>%
-    dplyr::select(gemwkid,gemeinde,!!varname)
+    dplyr::select(tidyselect::all_of(geo_cols),!!varname) %>%
+    pivot_longer(cols=varname,names_to="combination",values_to="difference")
 }
 
 
@@ -66,10 +67,10 @@ cross_fun <- function(df, vorl1, vorl2){
 #'
 #' get_differences(testdata,combinations$V1,combinations$V2)
 #'
-get_differences <- function(df, vorl1,vorl2){
 
-  crosscheckdata_new <- purrr::map2(vorl1,vorl2,~cross_fun(df,.x,.y))
+get_differences <- function(df, vorl1,vorl2, geo_cols=c("gemwkid","gemeinde")){
 
-  crosscheckdata_new %>% purrr::map(tidyr::gather, key = "combination", value = "difference", dplyr::contains("_")) %>% dplyr::bind_rows()
+  crosscheckdata_new <- purrr::map2_dfr(vorl1,vorl2,~cross_fun(df,.x,.y,geo_cols = geo_cols))
+
 }
 
