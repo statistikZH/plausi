@@ -12,5 +12,4 @@ Das plausi-package dient der R-gestützten Abstimmungsforensik. Es enthält Funk
 
 Installation via gittea:
 
-remotes::install_url("http://10.73.108.135:8788/STAT/plausi/archive/master.zip").
-
+remotes::install_url("http://10.73.108.152:8788/STAT/plausi/archive/develop.zip").
