@@ -8,89 +8,89 @@ vignette: >
 ---
 
 ```{r, include = FALSE}
-knitr::opts_chunk$set(
-  collapse = TRUE,
-  comment = "#>"
-)
+# knitr::opts_chunk$set(
+#   collapse = TRUE,
+#   comment = "#>"
+# )
 ```
 
 ```{r setup}
-library(plausi)
-library(caret)
+# library(plausi)
+# library(caret)
 ```
 
 # Overall Acuracy
 
 ```{r}
 
-
-sundata_369 <- readRDS("C:/gitrepos/plausi/data/20200927/sundata_369.RDS")
-
-features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
-
-unique(sundata_369$gemwkid)
-
-# wide to long
-pred_act <- sundata_369 %>% 
-  select(gemeinde,gemwkid, artsort, jastimmeninprozent) %>% 
-  tidyr::spread(artsort,jastimmeninprozent)
-
-# Hier code einbauen der nur Vorlagen mit mehr als 5-10 einträgen aufweist
-
-pred_all <- pred_act %>% 
-  filter(gemwkid != 9010)%>% 
-  rename(v_gemwkid = gemwkid)%>% 
-  # allenfalls auf right-join umstellen
-  right_join(features, by = c("v_gemwkid")) %>% 
-  #hack um gemeindelabels für Gemeinden die noch nicht auf gelb sind beizubehalten
-  mutate(gemeinde=v_gemeinde) %>% 
-  select(-v_gemeinde)
-
-
-loocv <- caret::trainControl(method = "LOOCV", number = 10)
-cv10 <- caret::trainControl(method = "cv", number = 10)
-
-earth <- 
-  cv_model_mars <- caret::train(
-    Eidg3 ~ ., 
-    data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
-    method = "gcvEarth",
-    trControl = loocv
-  )
-
-glm <- 
-  cv_model_mars <- caret::train(
-    Eidg3 ~ ., 
-    data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
-    method = "glmnet",
-    trControl = cv10
-  )
-
-tox_svm <- train(  Eidg3 ~ ., 
-    data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
-                 method = "svmRadial", 
-                 metric = "wRMSE",
-                 maximize = FALSE,
-                 tuneLength = 10,trControl = cv10)
-
-
-tg <- expand.grid(shrinkage = seq(0.1, 1, by = 0.2), 
-                  interaction.depth = c(1, 3, 7, 10),
-                  n.minobsinnode = c(2, 5, 10),
-                  n.trees = c(100, 300, 500, 1000))
-
-gbm <- 
-  cv_model_mars <- caret::train(
-    Eidg3 ~ ., 
-    data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
-    method = "ranger",
-    trControl = cv10
-  )
-
-
-mods <- resamples(list(earth=earth2, svm=tox_svm, glm=glm,ranger=gbm))
-
-summary(mods)
+# 
+# sundata_369 <- readRDS("C:/gitrepos/plausi/data/20200927/sundata_369.RDS")
+# 
+# features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
+# 
+# unique(sundata_369$gemwkid)
+# 
+# # wide to long
+# pred_act <- sundata_369 %>% 
+#   select(gemeinde,gemwkid, artsort, jastimmeninprozent) %>% 
+#   tidyr::spread(artsort,jastimmeninprozent)
+# 
+# # Hier code einbauen der nur Vorlagen mit mehr als 5-10 einträgen aufweist
+# 
+# pred_all <- pred_act %>% 
+#   filter(gemwkid != 9010)%>% 
+#   rename(v_gemwkid = gemwkid)%>% 
+#   # allenfalls auf right-join umstellen
+#   right_join(features, by = c("v_gemwkid")) %>% 
+#   #hack um gemeindelabels für Gemeinden die noch nicht auf gelb sind beizubehalten
+#   mutate(gemeinde=v_gemeinde) %>% 
+#   select(-v_gemeinde)
+# 
+# 
+# loocv <- caret::trainControl(method = "LOOCV", number = 10)
+# cv10 <- caret::trainControl(method = "cv", number = 10)
+# 
+# earth <- 
+#   cv_model_mars <- caret::train(
+#     Eidg3 ~ ., 
+#     data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
+#     method = "gcvEarth",
+#     trControl = loocv
+#   )
+# 
+# glm <- 
+#   cv_model_mars <- caret::train(
+#     Eidg3 ~ ., 
+#     data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
+#     method = "glmnet",
+#     trControl = cv10
+#   )
+# 
+# tox_svm <- train(  Eidg3 ~ ., 
+#     data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
+#                  method = "svmRadial", 
+#                  metric = "wRMSE",
+#                  maximize = FALSE,
+#                  tuneLength = 10,trControl = cv10)
+# 
+# 
+# tg <- expand.grid(shrinkage = seq(0.1, 1, by = 0.2), 
+#                   interaction.depth = c(1, 3, 7, 10),
+#                   n.minobsinnode = c(2, 5, 10),
+#                   n.trees = c(100, 300, 500, 1000))
+# 
+# gbm <- 
+#   cv_model_mars <- caret::train(
+#     Eidg3 ~ ., 
+#     data = pred_all %>% select(-gemeinde, -v_gemwkid) %>% drop_na(),
+#     method = "ranger",
+#     trControl = cv10
+#   )
+# 
+# 
+# mods <- resamples(list(earth=earth2, svm=tox_svm, glm=glm,ranger=gbm))
+# 
+# summary(mods)
 
 ```
 # Overfitting / Robustness to errors & anomalies
@@ -98,113 +98,113 @@ summary(mods)
 ```{r}
 
 # with real data 
-
-# Solve Overfitting
-https://blog.zenggyu.com/en/post/2018-06-16/multivariate-adaptive-regression-splines-in-a-nutshell/
-
-```{r}
-
-sundata_369 <- readRDS("C:/gitrepos/plausi/data/20200927/sundata_369.RDS")
-
-features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
-
-unique(sundata_369$gemwkid)
-
-# wide to long
-pred_act <- sundata_369 %>% 
-  select(gemeinde,gemwkid, artsort, jastimmeninprozent) %>% 
-  tidyr::spread(artsort,jastimmeninprozent)
-
-# Hier code einbauen der nur Vorlagen mit mehr als 5-10 einträgen aufweist
-
-pred_all <- pred_act %>% 
-  filter(gemwkid != 9010)%>% 
-  rename(v_gemwkid = gemwkid)%>% 
-  # allenfalls auf right-join umstellen
-  right_join(features, by = c("v_gemwkid")) %>% 
-  #hack um gemeindelabels für Gemeinden die noch nicht auf gelb sind beizubehalten
-  mutate(gemeinde=v_gemeinde) %>% 
-  select(-v_gemeinde)
-
-# ControlParamteres <- caret::trainControl(method = "cv",
-#                                   number = 5,
-#                                   savePredictions = TRUE,
-#                                   classProbs = TRUE)
+# 
+# # Solve Overfitting
+# https://blog.zenggyu.com/en/post/2018-06-16/multivariate-adaptive-regression-splines-in-a-nutshell/
+# 
+# ```{r}
+# 
+# sundata_369 <- readRDS("C:/gitrepos/plausi/data/20200927/sundata_369.RDS")
+# 
+# features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
+# 
+# unique(sundata_369$gemwkid)
+# 
+# # wide to long
+# pred_act <- sundata_369 %>% 
+#   select(gemeinde,gemwkid, artsort, jastimmeninprozent) %>% 
+#   tidyr::spread(artsort,jastimmeninprozent)
+# 
+# # Hier code einbauen der nur Vorlagen mit mehr als 5-10 einträgen aufweist
+# 
+# pred_all <- pred_act %>% 
+#   filter(gemwkid != 9010)%>% 
+#   rename(v_gemwkid = gemwkid)%>% 
+#   # allenfalls auf right-join umstellen
+#   right_join(features, by = c("v_gemwkid")) %>% 
+#   #hack um gemeindelabels für Gemeinden die noch nicht auf gelb sind beizubehalten
+#   mutate(gemeinde=v_gemeinde) %>% 
+#   select(-v_gemeinde)
+# 
+# # ControlParamteres <- caret::trainControl(method = "cv",
+# #                                   number = 5,
+# #                                   savePredictions = TRUE,
+# #                                   classProbs = TRUE)
+# # 
+# # 
+# # parameterGrid <- expand.grid(mtry=c(2,3,4))
+# # 
+# 
+# pred_all <- pred_all %>% mutate(Eidg3=ifelse(gemeinde=="Rüti", 66, Eidg3))
+# 
+# # hyper_grid <- expand.grid(
+# #   degree = 1:3,
+# #   nprune = seq(2, 100, length.out = 10) %>% floor()
+# # )
+# 
+# yes_out<-pred_all %>% mutate(yes_out=is_outlier_double_mad(Eidg3)) %>% filter(yes_out==TRUE)
 # 
 # 
-# parameterGrid <- expand.grid(mtry=c(2,3,4))
 # 
-
-pred_all <- pred_all %>% mutate(Eidg3=ifelse(gemeinde=="Rüti", 66, Eidg3))
-
-# hyper_grid <- expand.grid(
-#   degree = 1:3,
-#   nprune = seq(2, 100, length.out = 10) %>% floor()
-# )
-
-yes_out<-pred_all %>% mutate(yes_out=is_outlier_double_mad(Eidg3)) %>% filter(yes_out==TRUE)
-
-
-
-# Methode von gcvEarth auf pls angepasst
-preddata <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
-                          train = pred_all, 
-                          method = "gcvEarth",
-                          trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5),
-                          # tuneGrid=hyper_grid,
-                          exclude_votes = TRUE) %>% 
-                  mutate(differenz = abs(real - pred)) %>% 
-                  mutate_if(is.numeric,~round(.,1)) %>% 
-                  rename(Gemeinde=gemeinde)
-
-
-
-preddata %>% 
-       group_by(vorlage) %>% 
-       summarize(rmse=RMSE(pred,real,na.rm=TRUE))
-
-
-preddata2 <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
-                          train = pred_all, 
-                          method = "svmRadial",
-                          # method="bagEarth",
-                           # method = "earth",
-                          # trainControl = ControlParamteres,
-                          tuneGrid=glmBoostGrid,
-                          exclude_votes = TRUE) %>% 
-                  mutate(differenz = abs(real - pred)) %>% 
-                  mutate_if(is.numeric,~round(.,1)) %>% 
-                  rename(Gemeinde=gemeinde)
-
-preddata2 %>% 
-       group_by(vorlage) %>% 
-       summarize(rmse=RMSE(pred,real,na.rm=TRUE))
-
-
-preddata2 %>% 
-  filter(Gemeinde=="Rüti")
-
-
-preddata3<-preddata2 %>% 
-  bind_rows(preddata) %>% 
-  group_by(Gemeinde, v_gemwkid, vorlage) %>% 
-  summarize_at(vars(pred,real), mean)%>% 
-                  mutate(differenz = abs(real - pred)) %>% 
-                  mutate_if(is.numeric,~round(.,1)) 
-
-preddata3 <- preddata3 %>% 
-  group_by(vorlage) %>% 
-  mutate(rmse=RMSE(pred,real,na.rm=TRUE)) %>% 
-  mutate(potential_error=differenz/rmse)
-
-
-preddata3 %>% 
-       group_by(vorlage) %>% 
-       summarize(rmse=RMSE(pred,real,na.rm=TRUE))
-                  
-
-preddata %>% 
-  filter(Gemeinde=="Rüti")
+# # Methode von gcvEarth auf pls angepasst
+# preddata <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
+#                           train = pred_all, 
+#                           method = "gcvEarth",
+#                           trControl = trainControl(method = "repeatedcv", number = 10, repeats = 5),
+#                           # tuneGrid=hyper_grid,
+#                           exclude_votes = TRUE) %>% 
+#                   mutate(differenz = abs(real - pred)) %>% 
+#                   mutate_if(is.numeric,~round(.,1)) %>% 
+#                   rename(Gemeinde=gemeinde)
+# 
+# 
+# 
+# preddata %>% 
+#        group_by(vorlage) %>% 
+#        summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+# 
+# 
+# preddata2 <- predict_votes(votes = colnames(pred_act)[c(-1,-2)], 
+#                           train = pred_all, 
+#                           method = "svmRadial",
+#                           # method="bagEarth",
+#                            # method = "earth",
+#                           # trainControl = ControlParamteres,
+#                           tuneGrid=glmBoostGrid,
+#                           exclude_votes = TRUE) %>% 
+#                   mutate(differenz = abs(real - pred)) %>% 
+#                   mutate_if(is.numeric,~round(.,1)) %>% 
+#                   rename(Gemeinde=gemeinde)
+# 
+# preddata2 %>% 
+#        group_by(vorlage) %>% 
+#        summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+# 
+# 
+# preddata2 %>% 
+#   filter(Gemeinde=="Rüti")
+# 
+# 
+# preddata3<-preddata2 %>% 
+#   bind_rows(preddata) %>% 
+#   group_by(Gemeinde, v_gemwkid, vorlage) %>% 
+#   summarize_at(vars(pred,real), mean)%>% 
+#                   mutate(differenz = abs(real - pred)) %>% 
+#                   mutate_if(is.numeric,~round(.,1)) 
+# 
+# preddata3 <- preddata3 %>% 
+#   group_by(vorlage) %>% 
+#   mutate(rmse=RMSE(pred,real,na.rm=TRUE)) %>% 
+#   mutate(potential_error=differenz/rmse)
+# 
+# 
+# preddata3 %>% 
+#        group_by(vorlage) %>% 
+#        summarize(rmse=RMSE(pred,real,na.rm=TRUE))
+#                   
+# 
+# preddata %>% 
+#   filter(Gemeinde=="Rüti")
 
 
 ```

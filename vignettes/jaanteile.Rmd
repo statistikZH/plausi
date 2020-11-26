@@ -39,7 +39,7 @@ testdata <- results %>%
  drop_na()
 
 # Trainingsdatensatz erstellen (nur ausgezählte Gemeinden)
-train <- data %>% 
+train <- testdata %>% 
   mutate_at(vars(v6310,v6330),
             ~ifelse(mun_id %in% bfs_nrs,NA, .))
 
@@ -67,10 +67,8 @@ models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
 
 # Funktion für Vergleich unterschiedlicher Modelle
 test_models <- function(votes, train,test, model,...){
-```
 
-
-```{r}
+  
 plausi::predict_votes(votes = votes, 
                           train = train,
                           test=test,
@@ -87,7 +85,7 @@ plausi::predict_votes(votes = votes,
 #Vergleich anhand der Vorhersage für drei Vorlagen
 comparison <- map_dfr(models, ~test_models(votes=colnames(train)[c(-1,-2)][1:3],
                                         train=train,
-                                        test=test,
+                                        test=testdata,
                                         model=.x,
                                         geovars=c("mun_id","mun_name")))
 
@@ -100,6 +98,49 @@ comparison %>%
 ```
 
 
+# Streuung der Vorhersagefehler je Vorlage in der Vergangenheit
+
+```{r}
+
+# predict_single_vote("v6310", traindata=testdata, testprop = 0.1,geovars=c("mun_id","mun_name"))
+
+
+predictions <- predict_votes(colnames(testdata)[c(-1,-2)][1:20], train=testdata, testprop = 0.3,geovars=c("mun_id","mun_name"))
+
+
+gem_pred <- predictions %>% 
+  mutate(error=real-pred) %>% 
+  group_by(vorlage) %>% 
+  mutate(rmse=RMSE(pred,real)) %>% 
+  mutate(error_rmse=error/rmse) %>% 
+  mutate(outlier=is_outlier_double_mad(error_rmse))
+  
+
+ggplot(gem_pred, aes(vorlage, error))+
+  geom_jitter(aes(color=outlier))+
+  geom_violin(alpha=0.5)+
+  scale_color_viridis_d()+
+  theme_minimal()
+
+```
+
+
+# Fehlerbereich pro Gemeinde in Vergangenheit
+
+```{r}
+#  
+# 
+# gem_pred %>% 
+# group_by(mun_id,mun_name) %>% 
+# summarize(range_lower=outlier_range(error_rmse)$lower,range_uppper=outlier_range(error_rmse)$upper)
+
+
+# 
+# what <- predictions %>% 
+#   mutate(error=real-pred)
+
+
+```
 
 
 

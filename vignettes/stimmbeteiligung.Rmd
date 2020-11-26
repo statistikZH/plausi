@@ -20,8 +20,8 @@ library(tidyverse)
 Via swissdd package können die Daten für einen Abstimmungstermin der Wahl bezogen werden. 
 ```{r}
 
-Sys.getenv("https_proxy")
-Sys.setenv(https_proxy="")
+# Sys.getenv("https_proxy")
+# Sys.setenv(https_proxy="")
 
 data <- swissdd::get_nationalvotes(votedates = c("2020-09-27"))
 
@@ -42,12 +42,12 @@ diff <- get_differences(data_wide,combinations$V1,combinations$V2,geo_cols=c("ca
 ```{r}
 diff2 <- diff %>% 
   group_by(combination) %>% 
-  mutate(outlier=is_outlier_double_mad(value,thres=5))
+  mutate(outlier=is_outlier_double_mad(difference,thres=5))
 ```
 
 
 ```{r}
-ggplot(diff2, aes(combination, value))+
+ggplot(diff2, aes(combination, difference))+
   geom_violin()+
   geom_jitter(alpha=0.3, aes(color=outlier))+
   theme_minimal()+
@@ -70,7 +70,7 @@ Um herauszufinden welche der Vorlagen dazu führen, dass Kombinationen aufällig
 problem_vorlagen <- diff2 %>% 
   separate(combination,into=c("vorlage1","vorlage2"), sep="_") %>% 
   filter(outlier==TRUE) %>% 
-  pivot_longer( cols = -c(canton_name,mun_name,mun_id, value, outlier), names_to="vorlage", values_to="vorlage_id") %>% 
+  pivot_longer( cols = -c(canton_name,mun_name,mun_id, difference, outlier), names_to="vorlage", values_to="vorlage_id") %>% 
   group_by(mun_name,mun_id,vorlage_id) %>% 
   summarize(n=n())
   

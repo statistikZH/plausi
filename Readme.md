@@ -1,6 +1,7 @@
-![](https://opendata.swiss/content/uploads/2016/02/kt_zh.png)
 
 # plausi
+
+![](https://opendata.swiss/content/uploads/2016/02/kt_zh.png)
 
 ## R-Package für die Plausibilisierung von Abstimmungsresultaten
 
@@ -12,4 +13,4 @@ Das plausi-package dient der R-gestützten Abstimmungsforensik. Es enthält Funk
 
 Installation via gittea:
 
-remotes::install_url("http://10.73.108.152:8788/STAT/plausi/archive/develop.zip").
+__remotes::install_url("http://10.73.108.152:8788/STAT/plausi/archive/develop.zip")__
