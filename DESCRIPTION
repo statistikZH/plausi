@@ -5,7 +5,7 @@ Version: 0.1.0.9999
 Authors@R:    
     c(person(given = "Thomas",
              family = "Lo Russo",
-             role = c("aut", "cre")
+             role = c("aut", "cre"),
              email = "thomas.lorusso@statistik.ji.zh.ch"))
 Description: Toolkit for vote and election forensics in R that allows to identify statistical anomalies in vote results.
 License: GPL-2
