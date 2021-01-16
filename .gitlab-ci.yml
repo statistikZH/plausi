@@ -6,4 +6,4 @@ pages:
     - echo nothing to do
   artifacts:
     paths:
-    - public
+    - docs
