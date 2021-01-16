@@ -126,7 +126,6 @@ ggplot(gem_pred, aes(vorlage, error))+
 
 ```
 
-
 # Fehlerbereich pro Gemeinde in Vergangenheit
 
 ```{r}
@@ -143,6 +142,4 @@ summarize(range_lower=outlier_range(error_rmse)$lower,range_uppper=outlier_range
 
 
 ```
-
-
 
