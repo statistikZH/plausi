@@ -100,25 +100,34 @@ is_outlier_double_mad <- function(value, thres=3.5){
 #'
 #' @param value variable of interest
 #' @param thres z-score threshold (defaults to 3.5, which is a popular choice).
+#' @param percent defaults to TRUE. Values below zero are set to 0, values over 100 to 100.
 #'
 #' @return tibble with numeric range
 #' @export
 #'
 #' @examples
-outlier_range<- function(value, thres=3.5){
+outlier_range<- function(value, thres=3.5,percent=TRUE){
 
   # iqr_thres as argument to allow for more strict criteria for groups with high variance?
   # if(IQR(value)>iqr_thres) thres <- 1
 
 
-  tibble(median=median(value),
+  data <- tibble(median=median(value),
          iqr=IQR(value),
          lower=median(value)-plausi::DoubleMAD(value)[1]*thres,
-         upper=median(value)+plausi::DoubleMAD(value)[2]*thres,
-         label=paste(round(median(value)-plausi::DoubleMAD(value)[1]*thres),"-",
-                     round(median(value)+plausi::DoubleMAD(value)[2]*thres))
+         upper=median(value)+plausi::DoubleMAD(value)[2]*thres
   )
 
+if(percent==TRUE){
+
+ data <-data %>%
+    mutate(lower=ifelse(lower<0,0,round(lower,1)),
+           upper=ifelse(upper>100,100,round(upper,1)))
+
+}
+
+  data %>%
+    mutate(label=paste(lower,"-",upper))
   # %>%
   #   mutate(lower=ifelse(lower<0,0,lower),
   #          upper=ifelse(upper>100,100,upper))
