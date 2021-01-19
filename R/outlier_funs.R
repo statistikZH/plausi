@@ -114,7 +114,9 @@ outlier_range<- function(value, thres=3.5){
   tibble(median=median(value),
          iqr=IQR(value),
          lower=median(value)-plausi::DoubleMAD(value)[1]*thres,
-         upper=median(value)+plausi::DoubleMAD(value)[2]*thres
+         upper=median(value)+plausi::DoubleMAD(value)[2]*thres,
+         label=paste(round(median(value)-plausi::DoubleMAD(value)[1]*thres),"-",
+                     round(median(value)+plausi::DoubleMAD(value)[2]*thres))
   )
 
   # %>%
