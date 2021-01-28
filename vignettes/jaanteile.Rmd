@@ -127,7 +127,7 @@ ggplot(gem_pred, aes(vorlage, error))+
 
 # Fehlerbereich pro Gemeinde in Vergangenheit
 
-```{r}
+```{r echo=FALSE}
 #  
 # 
 # gem_pred %>% 

@@ -10,14 +10,14 @@ vignette: >
 Um Anomalien in der Stimmbeteiligung ausfindig zu machen bietet das plausi package Funktionen, die es erlauben die Differenz zwischen der Beteiligungswerten verschiedener Vorlagen systematisch über alle Zählkreise hinweg zu vergleichen.
 
 In der Regel bestehen relativ klare Muster - gewisse Vorlagen mobilisieren stärker als andere. Hierbei sind sowohl das Thema der Vorlage, die Intensität des Abstimmungskampfes als auch die Bezugsebene des Geschäfts. ausschlaggebend. Kantonale Vorlagen weissen i.d.R. flächendekend eine tiefere Beteiligung aus als nationale Vorlagen, die am selben Abstimmungstag zur Abstimmung kommen. Dies können wir uns zu Plausibilisierungszwecken zu nutze machen. Das folgende Beispiel dient der Veranschaulichung.
-```{r setup}
+```{r setup, message=FALSE}
 library(plausi)
 library(swissdd)
 library(tidyverse)
 ```
 # Datenbezug
 Der Reproduzierbarkeit halber baut das Beispiel auf offen verfügbaren Daten auf. Mit dem `swissdd` package können die Daten für einen Abstimmungstermin der Wahl bezogen werden. 
-```{r}
+```{r ,message=FALSE, warning=FALSE}
 
 # Sys.getenv("https_proxy")
 # Sys.setenv(https_proxy="")
@@ -47,7 +47,7 @@ diff <- get_differences(data_wide,combinations$V1,combinations$V2,geo_cols=c("ca
 # Identifiziere auffällige Stimmbeteiligungsdifferenzen
 
 Nun haben wir die Stimmbeteiligungsdifferenzen zwischen den verschiedenen Vorlagen für jedes Gebiet berechnet. In einem nächsten Schritt können wir ausfindig machen, welche Gebiete statistisch auffällige Differenzen je Vorlagenkombination aufweisen. Hierfür nutzen wir die `is_outlier_double_mad`-Funktion aus dem plausi-Package. 
-```{r}
+```{r ,message=FALSE, warning=FALSE}
 diff2 <- diff %>% 
   group_by(combination) %>% 
   # Threshold für Ausreisser : Abweichung von mehr als 5 medianen Abweichungen vom Median anstatt der üblichen 3.5.
@@ -79,7 +79,7 @@ Um herauszufinden welche der Vorlagen dazu führen, dass Kombinationen aufällig
 - Formattiere Daten um um zählen zu können wie oft eine Vorlage in auffälligen Kombinationen vorkommt.
 - Ordne nach Häufigkeit
 
-```{r}
+```{r , message=FALSE, waning=FALSE}
 
 problem_vorlagen <- diff2 %>% 
   separate(combination,into=c("vorlage1","vorlage2"), sep="_") %>% 
