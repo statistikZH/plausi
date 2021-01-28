@@ -20,7 +20,7 @@ Ein Glücksfall: stabiles Abstimmungsverhalten über die Zeit. Die ideologische 
 library(plausi)
 library(tidyverse)
 library(swissdd)
-library(earth)
+library(caret)
 
 # BFS Nummern ausgewählter Gemeinden
 bfs_nrs <- c(6,7,10,11,12,87,219,294 ,181,38,60,92,119,182,218)
@@ -61,7 +61,7 @@ Das 'gvcEarth' Model, ein MARS-Modell aus dem 'earth' package (Splines) wie auch
 - gcvEarth offers the best accuracy, however seems to be prone to overfit in case of false results (real example: Rüti with switched yes and no-shares)
 - svmRadial is a bit less acurate on average however seems not to be affected by single false results
 
-```{r}
+```{r define models}
 # Modelle die verglichen werden sollen
 models <- c("gcvEarth","glmboost","pls","pcr","svmRadial")
 
@@ -100,7 +100,7 @@ comparison %>%
 
 # Streuung der Vorhersagefehler je Vorlage in der Vergangenheit
 
-```{r}
+```{r predictions}
 
 # predict_single_vote("v6310", traindata=testdata, testprop = 0.1,geovars=c("mun_id","mun_name"))
 

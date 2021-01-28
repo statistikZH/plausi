@@ -1,5 +1,5 @@
 ---
-title: "model_selection"
+title: "Modelle für Vorhersage vergleichen"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{model_selection}
@@ -209,5 +209,4 @@ vignette: >
 
 ```
 
-```
 
