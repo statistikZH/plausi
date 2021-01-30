@@ -105,7 +105,7 @@
       <a href="../articles/jaanteile.html">Vorhersage Ja-Anteile</a>
     </li>
     <li>
-      <a href="../articles/model_selection.html">model_selection</a>
+      <a href="../articles/model_selection.html">Modelle für Vorhersage optimieren</a>
     </li>
     <li>
       <a href="../articles/stimmbeteiligung.html">Auffällige Stimmbeteiligungswerte identifizieren</a>
@@ -142,8 +142,9 @@
   <span class='va'>train</span>,
   test <span class='op'>=</span> <span class='cn'>NULL</span>,
   method <span class='op'>=</span> <span class='st'>"bagEarth"</span>,
-  trainControl <span class='op'>=</span> <span class='cn'>NULL</span>,
+  trControl <span class='op'>=</span> <span class='cn'>NULL</span>,
   exclude_votes <span class='op'>=</span> <span class='cn'>FALSE</span>,
+  geovars <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"gemeinde"</span>, <span class='st'>"v_gemwkid"</span><span class='op'>)</span>,
   <span class='va'>...</span>
 <span class='op'>)</span></pre>
 
@@ -167,12 +168,16 @@
       <td><p>method available in the caret-package which should be used for the prediction</p></td>
     </tr>
     <tr>
-      <th>trainControl</th>
+      <th>trControl</th>
       <td><p>parameters to tune the model</p></td>
     </tr>
     <tr>
       <th>exclude_votes</th>
       <td><p>if TRUE the variables to be predicted will be excluded from each others models</p></td>
+    </tr>
+    <tr>
+      <th>geovars</th>
+      <td><p>variables containing labels and ids of the spatial units</p></td>
     </tr>
     <tr>
       <th>...</th>
@@ -187,26 +192,20 @@
     <h2 class="hasAnchor" id="examples"><a class="anchor" href="#examples"></a>Examples</h2>
     <pre class="examples"><div class='input'>
 <span class='fu'>predict_votes</span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"Eidg1"</span>,<span class='st'>"Kant1"</span><span class='op'>)</span>, <span class='va'>votedata</span>, exclude_votes<span class='op'>=</span><span class='cn'>TRUE</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='warning'>Warning: `...` is not empty.</span>
-#&gt; <span class='warning'></span>
-#&gt; <span class='warning'>We detected these problematic arguments:</span>
-#&gt; <span class='warning'>* `needs_dots`</span>
-#&gt; <span class='warning'></span>
-#&gt; <span class='warning'>These dots only exist to allow future extensions and should be empty.</span>
-#&gt; <span class='warning'>Did you misspecify an argument?</span></div><div class='output co'>#&gt; <span style='color: #555555;'># A tibble: 342 x 5</span><span>
+</div><div class='output co'>#&gt; <span style='color: #949494;'># A tibble: 342 x 5</span><span>
 #&gt;    gemeinde           v_gemwkid  pred  real vorlage
-#&gt;    </span><span style='color: #555555;font-style: italic;'>&lt;chr&gt;</span><span>                  </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #555555;font-style: italic;'>&lt;chr&gt;</span><span>  
-#&gt; </span><span style='color: #555555;'> 1</span><span> Adlikon                   21  21.5  21.5 Eidg1  
-#&gt; </span><span style='color: #555555;'> 2</span><span> Adliswil                 131  48.3  48.3 Eidg1  
-#&gt; </span><span style='color: #555555;'> 3</span><span> Aesch                    241  30.9  30.9 Eidg1  
-#&gt; </span><span style='color: #555555;'> 4</span><span> Aeugst am Albis            1  31.5  31.5 Eidg1  
-#&gt; </span><span style='color: #555555;'> 5</span><span> Affoltern am Albis         2  39.8  39.8 Eidg1  
-#&gt; </span><span style='color: #555555;'> 6</span><span> Altikon                  211  29.8  29.8 Eidg1  
-#&gt; </span><span style='color: #555555;'> 7</span><span> Andelfingen               30  32.1  32.1 Eidg1  
-#&gt; </span><span style='color: #555555;'> 8</span><span> Bachenbülach              51  39.9  39.9 Eidg1  
-#&gt; </span><span style='color: #555555;'> 9</span><span> Bachs                     81  30.5  30.5 Eidg1  
-#&gt; </span><span style='color: #555555;'>10</span><span> Bäretswil                111  33.3  33.3 Eidg1  
-#&gt; </span><span style='color: #555555;'># ... with 332 more rows</span><span></div></span></pre>
+#&gt;    </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>                  </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;dbl&gt;</span><span> </span><span style='color: #949494;font-style: italic;'>&lt;chr&gt;</span><span>  
+#&gt; </span><span style='color: #BCBCBC;'> 1</span><span> Adlikon                   21  21.5  21.5 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 2</span><span> Adliswil                 131  48.3  48.3 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 3</span><span> Aesch                    241  30.9  30.9 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 4</span><span> Aeugst am Albis            1  31.5  31.5 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 5</span><span> Affoltern am Albis         2  39.8  39.8 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 6</span><span> Altikon                  211  29.8  29.8 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 7</span><span> Andelfingen               30  32.1  32.1 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 8</span><span> Bachenbülach              51  39.9  39.9 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'> 9</span><span> Bachs                     81  30.5  30.5 Eidg1  
+#&gt; </span><span style='color: #BCBCBC;'>10</span><span> Bäretswil                111  33.3  33.3 Eidg1  
+#&gt; </span><span style='color: #949494;'># … with 332 more rows</span><span></div></span></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
     <nav id="toc" data-toggle="toc" class="sticky-top">
@@ -218,7 +217,7 @@
 
       <footer>
       <div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Thomas Lo Russo.</p>
 </div>
 
 <style>.bmc-button img{width: 27px !important;margin-bottom: 1px !important;box-shadow: none !important;border: none !important;vertical-align: middle !important;}.bmc-button{line-height: 36px !important;height:37px !important;text-decoration: none !important;display:inline-flex !important;color:#000000 !important;background-color:#FFFFFF !important;border-radius: 3px !important;border: 1px solid transparent !important;padding: 0px 9px !important;font-size: 17px !important;letter-spacing:-0.08px !important;box-shadow: 0px 1px 2px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5) !important;margin: 0 auto !important;font-family:'Lato', sans-serif !important;-webkit-box-sizing: border-box !important;box-sizing: border-box !important;-o-transition: 0.3s all linear !important;-webkit-transition: 0.3s all linear !important;-moz-transition: 0.3s all linear !important;-ms-transition: 0.3s all linear !important;transition: 0.3s all linear !important;}.bmc-button:hover, .bmc-button:active, .bmc-button:focus {-webkit-box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5) !important;text-decoration: none !important;box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5) !important;opacity: 0.85 !important;color:#000000 !important;}</style><link href="https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext" rel="stylesheet"><a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/politanch"><img src="https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg" alt="Buy me a coffee"><span style="margin-left:5px">Buy me a coffee</span></a>
