@@ -9,8 +9,9 @@ predict_votes(
   train,
   test = NULL,
   method = "bagEarth",
-  trainControl = NULL,
+  trControl = NULL,
   exclude_votes = FALSE,
+  geovars = c("gemeinde", "v_gemwkid"),
   ...
 )
 }
@@ -23,9 +24,11 @@ predict_votes(
 
 \item{method}{method available in the caret-package which should be used for the prediction}
 
-\item{trainControl}{parameters to tune the model}
+\item{trControl}{parameters to tune the model}
 
 \item{exclude_votes}{if TRUE the variables to be predicted will be excluded from each others models}
+
+\item{geovars}{variables containing labels and ids of the spatial units}
 
 \item{...}{optional parameters that can be passed to the caret::train function}
 }

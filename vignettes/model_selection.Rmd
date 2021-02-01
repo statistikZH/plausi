@@ -1,5 +1,5 @@
 ---
-title: "model_selection"
+title: "Modelle für Vorhersage optimieren"
 output: rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{model_selection}
@@ -7,34 +7,100 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+__WORK IN PROGRESS__
+
 ```{r, include = FALSE}
-# knitr::opts_chunk$set(
-#   collapse = TRUE,
-#   comment = "#>"
-# )
+knitr::opts_chunk$set(
+  collapse = TRUE,
+   comment = "#>",
+   message = FALSE,
+   warning= FALSE
+ )
 ```
 
 ```{r setup}
-# library(plausi)
-# library(caret)
+library(plausi)
+library(caret)
+library(tidyverse)
 ```
 
-# Overall Acuracy
+# Parameter-Tuning mit dem Caret package
 
 ```{r}
+# BFS Nummern ausgewählter Gemeinden
+bfs_nrs <- c(6,7,10,11,12,87,219,294 ,181,38,60,92,119,182,218)
 
-# 
-# sundata_369 <- readRDS("C:/gitrepos/plausi/data/20200927/sundata_369.RDS")
-# 
-# features <- readRDS("C:/gitrepos/plausi/data/20200927/features2020-09-27.RDS")
-# 
-# unique(sundata_369$gemwkid)
-# 
-# # wide to long
-# pred_act <- sundata_369 %>% 
-#   select(gemeinde,gemwkid, artsort, jastimmeninprozent) %>% 
-#   tidyr::spread(artsort,jastimmeninprozent)
-# 
+Sys.setenv(https_proxy="")
+# Beziehe historische Daten
+results <- swissdd::get_nationalvotes(from_date="2015-03-01", to_date="2020-11-29")
+
+# Formattiere historische Daten um : eine Spalte je Vorlage
+testdata <- results %>%
+  filter(canton_id==1) %>% 
+  mutate(id=paste0("v",id)) %>%
+  dplyr::select(jaStimmenInProzent, id, mun_id, mun_name) %>%
+  pivot_wider(names_from=id, values_from = jaStimmenInProzent) %>% 
+  drop_na()
+
+traind <- testdata %>% 
+  mutate_at(vars(v6360),# vars(v6360,v6370),
+            ~ifelse(mun_id %in% bfs_nrs,., NA)) %>% 
+  drop_na()
+
+svmGrid <- expand.grid(sigma= 2^c(-25, -20, -15,-10, -5, 0), C= 2^c(0:5))
+
+svm_mod <- train(
+  v6360 ~ ., 
+  data = traind %>% dplyr::select(-mun_id,-mun_name),
+  method = "svmRadial",               
+  trControl = trainControl(method = "cv", number = 10),
+  tuneGrid = svmGrid,
+  tuneLength = 10
+)
+
+svm_mod
+
+
+svm_mod$results
+
+ggplot(svm_mod) + 
+  theme_light()
+
+
+testdata$newpred <- predict(svm_mod, testdata)
+
+testdata %>% select(mun_id,mun_name, v6360,newpred)
+```
+
+# Paramter-Tuning mit dem plausi-package
+Das Tuning-Grid kann den Funktionen des plausi-packages ebenfalls übergeben werden.
+```{r}
+# works
+predict_single_vote("v6360",
+                    traindata=traind, 
+                    testdata=testdata,
+                    method="svmRadial",
+                    geovars=c("mun_id","mun_name" ),
+                    tuneGrid=svmGrid,
+                    tuneLength = 10)
+
+# not working yet as dots are not passed as intended
+predict_votes(votes=c("v6360"),
+                    train=traind, 
+                    test=testdata,
+                    method="svmRadial",
+                    geovars=c("mun_id","mun_name"),
+                    tuneGrid=svmGrid,
+                    tuneLength = 10)
+
+```
+
+```{r echo=FALSE}
+
+
+
+
+
 # # Hier code einbauen der nur Vorlagen mit mehr als 5-10 einträgen aufweist
 # 
 # pred_all <- pred_act %>% 
@@ -93,9 +159,10 @@ vignette: >
 # summary(mods)
 
 ```
-# Overfitting / Robustness to errors & anomalies
 
-```{r}
+```{r echo=FALSE}
+
+# Overfitting / Robustness to errors & anomalies
 
 # with real data 
 # 
@@ -207,7 +274,7 @@ vignette: >
 #   filter(Gemeinde=="Rüti")
 
 
-```
 
 ```
+
 

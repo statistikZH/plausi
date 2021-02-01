@@ -8,9 +8,10 @@ predict_single_vote(
   x,
   traindata,
   testdata = NULL,
-  method = "gcvEarth",
-  trainControl = NULL,
+  method = "bagEarth",
+  trControl = NULL,
   to_exclude_vars = NULL,
+  geovars = c("gemeinde", "v_gemwkid"),
   ...
 )
 }
@@ -23,9 +24,11 @@ predict_single_vote(
 
 \item{method}{method available in the caret-package which should be used for the prediction}
 
-\item{trainControl}{parameters to tune the model}
+\item{trControl}{parameters to tune the model}
 
 \item{to_exclude_vars}{variables that should be excluded from the model}
+
+\item{geovars}{variables containing labels and ids of the spatial units}
 
 \item{...}{optional parameters that can be passed to the caret::train function}
 }
@@ -38,4 +41,5 @@ Train a model for a specific vote
 \examples{
 
 predict_single_vote("Eidg1",votedata, to_exclude_vars = "Kant1")
+
 }

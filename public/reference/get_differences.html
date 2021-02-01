@@ -105,7 +105,7 @@
       <a href="../articles/jaanteile.html">Vorhersage Ja-Anteile</a>
     </li>
     <li>
-      <a href="../articles/model_selection.html">model_selection</a>
+      <a href="../articles/model_selection.html">Modelle für Vorhersage optimieren</a>
     </li>
     <li>
       <a href="../articles/stimmbeteiligung.html">Auffällige Stimmbeteiligungswerte identifizieren</a>
@@ -137,7 +137,7 @@
     <p>Berechnung der Stimmbeteiligungsdifferenz zwischen allen Vorlagen</p>
     </div>
 
-    <pre class="usage"><span class='fu'>get_differences</span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>vorl1</span>, <span class='va'>vorl2</span><span class='op'>)</span></pre>
+    <pre class="usage"><span class='fu'>get_differences</span><span class='op'>(</span><span class='va'>df</span>, <span class='va'>vorl1</span>, <span class='va'>vorl2</span>, geo_cols <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"gemwkid"</span>, <span class='st'>"gemeinde"</span><span class='op'>)</span><span class='op'>)</span></pre>
 
     <h2 class="hasAnchor" id="arguments"><a class="anchor" href="#arguments"></a>Arguments</h2>
     <table class="ref-arguments">
@@ -169,14 +169,14 @@ eidg2 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base
 kant1 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='fl'>57.73</span>,<span class='fl'>60.27</span>,<span class='fl'>63.31</span>,<span class='fl'>51.93</span>,<span class='fl'>54.49</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='fu'>single_difference</span><span class='op'>(</span><span class='va'>testdata</span>,<span class='st'>"eidg1"</span>,<span class='st'>"eidg2"</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error in single_difference(testdata, "eidg1", "eidg2"): konnte Funktion "single_difference" nicht finden</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error in single_difference(testdata, "eidg1", "eidg2"): could not find function "single_difference"</span></div><div class='input'>
  <span class='co'># generate combinations</span>
 <span class='va'>combinations</span> <span class='op'>&lt;-</span><span class='fu'><a href='https://rdrr.io/r/base/as.data.frame.html'>as.data.frame</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/t.html'>t</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/utils/combn.html'>combn</a></span><span class='op'>(</span><span class='fu'><a href='https://rdrr.io/r/base/c.html'>c</a></span><span class='op'>(</span><span class='st'>"eidg1"</span>,<span class='st'>"eidg2"</span>,<span class='st'>"kant1"</span><span class='op'>)</span>,<span class='fl'>2</span><span class='op'>)</span><span class='op'>)</span><span class='op'>)</span>
 
 <span class='co'># calculate all possible differences between columns</span>
 
 <span class='fu'>get_differences</span><span class='op'>(</span><span class='va'>testdata</span>,<span class='va'>combinations</span><span class='op'>$</span><span class='va'>V1</span>,<span class='va'>combinations</span><span class='op'>$</span><span class='va'>V2</span><span class='op'>)</span>
-</div><div class='output co'>#&gt; <span class='error'>Error: Objekt 'pivot_longer' mit Modus 'function' nicht gefunden</span></div><div class='input'>
+</div><div class='output co'>#&gt; <span class='error'>Error: </span></div><div class='input'>
 </div></pre>
   </div>
   <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
@@ -189,7 +189,7 @@ kant1 <span class='op'>=</span> <span class='fu'><a href='https://rdrr.io/r/base
 
       <footer>
       <div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Thomas Lo Russo.</p>
 </div>
 
 <style>.bmc-button img{width: 27px !important;margin-bottom: 1px !important;box-shadow: none !important;border: none !important;vertical-align: middle !important;}.bmc-button{line-height: 36px !important;height:37px !important;text-decoration: none !important;display:inline-flex !important;color:#000000 !important;background-color:#FFFFFF !important;border-radius: 3px !important;border: 1px solid transparent !important;padding: 0px 9px !important;font-size: 17px !important;letter-spacing:-0.08px !important;box-shadow: 0px 1px 2px rgba(190, 190, 190, 0.5) !important;-webkit-box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5) !important;margin: 0 auto !important;font-family:'Lato', sans-serif !important;-webkit-box-sizing: border-box !important;box-sizing: border-box !important;-o-transition: 0.3s all linear !important;-webkit-transition: 0.3s all linear !important;-moz-transition: 0.3s all linear !important;-ms-transition: 0.3s all linear !important;transition: 0.3s all linear !important;}.bmc-button:hover, .bmc-button:active, .bmc-button:focus {-webkit-box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5) !important;text-decoration: none !important;box-shadow: 0px 1px 2px 2px rgba(190, 190, 190, 0.5) !important;opacity: 0.85 !important;color:#000000 !important;}</style><link href="https://fonts.googleapis.com/css?family=Lato&subset=latin,latin-ext" rel="stylesheet"><a class="bmc-button" target="_blank" href="https://www.buymeacoffee.com/politanch"><img src="https://www.buymeacoffee.com/assets/img/BMC-btn-logo.svg" alt="Buy me a coffee"><span style="margin-left:5px">Buy me a coffee</span></a>

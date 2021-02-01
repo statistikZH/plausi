@@ -4,7 +4,7 @@
 \alias{cross_fun}
 \title{Berechnung der Stimmbeteiligungsdifferenz zwischen zwei Vorlagen}
 \usage{
-cross_fun(df, vorl1, vorl2)
+cross_fun(df, vorl1, vorl2, geo_cols = geocols)
 }
 \arguments{
 \item{df}{Datensatz mit Gemeinde-ID und den Stimmbeteiligungen für verschiedene Vorlagen (eigene Spalten, mit Vorlagen-ID als Spaltenname)}
