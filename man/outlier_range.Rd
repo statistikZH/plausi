@@ -4,12 +4,14 @@
 \alias{outlier_range}
 \title{Get boundaries beyond which a value is an outlier via Median Absolute Deviation from the Median for asymmetric distributions}
 \usage{
-outlier_range(value, thres = 3.5)
+outlier_range(value, thres = 3.5, percent = TRUE)
 }
 \arguments{
 \item{value}{variable of interest}
 
 \item{thres}{z-score threshold (defaults to 3.5, which is a popular choice).}
+
+\item{percent}{defaults to TRUE. Values below zero are set to 0, values over 100 to 100.}
 }
 \value{
 tibble with numeric range
