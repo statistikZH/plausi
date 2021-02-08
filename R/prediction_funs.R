@@ -68,21 +68,26 @@ predict_single_vote <- function(x,traindata,testdata=NULL,method="bagEarth",trCo
   # Trainiere Model
   cv_model_mars <- caret::train(
     form,
-
     data = traindata %>% dplyr::select(!tidyselect::all_of(geovars)),
     method = method,
-    trControl = trControl,...
+    trControl = trControl,
+    ...
   )
 
-  # cv_model_mars$bestTune
+  # lastmod <<-cv_model_mars
+
+# cv_model_mars$results
 
 
   testdata$pred <- stats::predict(cv_model_mars,testdata)
 
   # TO DO :
   # Gebietslabel / ID nicht hart vorgeben, sondern via parameter der Funktion übernehmen
-  testdata %>% select(tidyselect::all_of(geovars), pred, real=x) %>%
+  # Objekt mit modell und Daten als Output
+  testdata %>%
+    select(tidyselect::all_of(geovars), pred, real=x) %>%
     mutate(vorlage=x)
+
 }
 
 
@@ -111,7 +116,14 @@ predict_votes <- function(votes,train,test=NULL,method="bagEarth",trControl=NULL
   if(exclude_votes==TRUE) { to_exclude_vars <- votes} else { to_exclude_vars <- NULL }
 
   # Iteriere über die vorherzusagenden Vorlagen
-  purrr::map_dfr(votes, ~predict_single_vote(.,train,test,method=method,trControl=trControl,to_exclude_vars=to_exclude_vars,geovars=geovars,testprop=testprop))
+  purrr::map_dfr(votes, plausi::predict_single_vote,
+                                                     traindata=train,
+                                                     testdata=test,
+                                                     method=method,
+                                                     trControl=trControl,
+                                                     to_exclude_vars=to_exclude_vars,
+                                                     geovars=geovars,
+                 ...)
 
 }
 
