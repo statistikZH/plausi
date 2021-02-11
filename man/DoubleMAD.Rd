@@ -2,7 +2,8 @@
 % Please edit documentation in R/outlier_funs.R
 \name{DoubleMAD}
 \alias{DoubleMAD}
-\title{Get Median Absolute Deviation from the Median for asymmetric distributions}
+\title{MAD -> Calculate MAD
+Get Median Absolute Deviation from the Median for asymmetric distributions}
 \usage{
 DoubleMAD(x, zero.mad.action = "warn")
 }

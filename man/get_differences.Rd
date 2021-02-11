@@ -4,7 +4,7 @@
 \alias{get_differences}
 \title{Berechnung der Stimmbeteiligungsdifferenz zwischen allen Vorlagen}
 \usage{
-get_differences(df, vorl1, vorl2)
+get_differences(df, vorl1, vorl2, geo_cols = c("gemwkid", "gemeinde"))
 }
 \arguments{
 \item{df}{Datensatz mit Gemeinde-ID und den Stimmbeteiligungen für verschiedene Vorlagen (eigene Spalten)}

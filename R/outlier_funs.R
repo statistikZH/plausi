@@ -1,7 +1,7 @@
 
 # MAD Functions
 
-# MAD -> Calculate MAD
+#' MAD -> Calculate MAD
 #' Get Median Absolute Deviation from the Median for asymmetric distributions
 #'
 #' Suited to find outliers in asymetric distributions (in contrast to the standard mad() function which works for symetric distributions only)
