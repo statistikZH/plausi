@@ -84,7 +84,7 @@ predict_single_vote("v6360",
                     tuneGrid=svmGrid,
                     tuneLength = 10)
 
-# not working yet as dots are not passed as intended
+# working - dots are now passed as intended
 predict_votes(votes=c("v6360"),
                     train=traind, 
                     test=testdata,

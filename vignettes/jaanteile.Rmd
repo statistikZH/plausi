@@ -100,7 +100,11 @@ comparison %>%
 
 # Streuung der Vorhersagefehler je Vorlage in der Vergangenheit
 
+<<<<<<< HEAD
+```{r}
+=======
 ```{r predictions}
+>>>>>>> master
 
 # predict_single_vote("v6310", traindata=testdata, testprop = 0.1,geovars=c("mun_id","mun_name"))
 
@@ -124,7 +128,6 @@ ggplot(gem_pred, aes(vorlage, error))+
 
 ```
 
-
 # Fehlerbereich pro Gemeinde in Vergangenheit
 
 ```{r echo=FALSE}
@@ -141,6 +144,4 @@ ggplot(gem_pred, aes(vorlage, error))+
 
 
 ```
-
-
 

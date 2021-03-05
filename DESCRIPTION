@@ -2,8 +2,7 @@ Package: plausi
 Type: Package
 Title: popular vote forensics
 Version: 0.1.0.9999
-Authors@R:    
-    c(person(given = "Thomas",
+Authors@R:   c(person(given = "Thomas",
              family = "Lo Russo",
              role = c("aut", "cre"),
              email = "thomas.lorusso@statistik.ji.zh.ch"),
