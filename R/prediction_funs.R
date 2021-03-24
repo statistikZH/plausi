@@ -134,6 +134,7 @@ predict_votes <- function(votes,train,test=NULL,method="bagEarth",trControl=NULL
 #'
 #' @param m predicted value (fitted by modelling)
 #' @param o oserved 'true' value
+#' @param na.rm drop NAs, defaults to TRUE
 #'
 #' @return numeric value
 #' @export
