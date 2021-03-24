@@ -150,6 +150,6 @@ predict_votes <- function(votes,train,test=NULL,method="bagEarth",trControl=NULL
 #' summarize(rmse=RMSE(pred,real))
 #'
 
-RMSE = function(m, o){
-  sqrt(mean((m - o)^2))
+RMSE = function(m, o, na.rm=TRUE){
+  sqrt(mean((m - o)^2,na.rm=na.rm))
 }
