@@ -12,6 +12,7 @@ predict_single_vote(
   trControl = NULL,
   to_exclude_vars = NULL,
   geovars = c("gemeinde", "v_gemwkid"),
+  testprop = NA,
   ...
 )
 }
@@ -29,6 +30,8 @@ predict_single_vote(
 \item{to_exclude_vars}{variables that should be excluded from the model}
 
 \item{geovars}{variables containing labels and ids of the spatial units}
+
+\item{testprop}{optional argument to generate a training dataset by splitting the dataset (testprop=share of observations to be randomly kept)}
 
 \item{...}{optional parameters that can be passed to the caret::train function}
 }

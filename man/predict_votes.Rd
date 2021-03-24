@@ -12,6 +12,7 @@ predict_votes(
   trControl = NULL,
   exclude_votes = FALSE,
   geovars = c("gemeinde", "v_gemwkid"),
+  testprop = NA,
   ...
 )
 }
@@ -29,6 +30,8 @@ predict_votes(
 \item{exclude_votes}{if TRUE the variables to be predicted will be excluded from each others models}
 
 \item{geovars}{variables containing labels and ids of the spatial units}
+
+\item{testprop}{optional argument to generate a training dataset by splitting the dataset (testprop=share of observations to be randomly kept)}
 
 \item{...}{optional parameters that can be passed to the caret::train function}
 }

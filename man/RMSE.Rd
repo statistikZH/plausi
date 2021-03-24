@@ -4,7 +4,7 @@
 \alias{RMSE}
 \title{Calculate RMSE}
 \usage{
-RMSE(m, o)
+RMSE(m, o, na.rm = TRUE)
 }
 \arguments{
 \item{m}{predicted value (fitted by modelling)}
