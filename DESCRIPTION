@@ -15,6 +15,8 @@ Imports:
      tidyr,
      caret,
      stats
+Remotes:  
+     r-lib/cli
 Depends: 
     R (>= 2.10)
 RoxygenNote: 7.1.1
